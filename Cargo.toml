@@ -1,0 +1,44 @@
+[package]
+name = "photo-album"
+version = "0.0.1"
+edition = "2024"
+readme = "README.md"
+authors = ["Gavin J Stark"]
+description = "Photo album for a website"
+homepage = "https://github.com/atthecodeface/photoalbum"
+documentation = "https://docs.rs/photoalbum"
+keywords = [""]
+categories = [""]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/atthecodeface/photoalbum"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+num-traits = "0.2.19"
+serde_yaml = "0.9.34"
+wasm-bindgen = "0.2.126"
+
+[dependencies.serde_json]
+version = "1.0"
+features = ["alloc"]
+
+[dependencies.serde]
+version = "1.0"
+features = ["derive"]
+
+[dependencies.thiserror]
+version = "2.0"
+
+[dependencies.anyhow]
+version = "1.0"
+
+[dependencies.thunderclap]
+version = "0.1"
+path = "../thunderclap"
+
+[dependencies.image]
+version = "0.25"
+default-features = false
+features = ["jpeg", "png"]

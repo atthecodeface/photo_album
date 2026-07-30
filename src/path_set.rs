@@ -1,0 +1,176 @@
+use thiserror::Error;
+
+use std::path::{Path, PathBuf};
+
+#[derive(Error, Debug)]
+pub enum Error {
+    #[error("path {path} cannot be added to seach chain as it does not exist")]
+    PathCannotAdd { path: PathBuf },
+    #[error("failed to find '{path}' on the search path")]
+    PathNotFoundOnPathSet { path: PathBuf },
+}
+
+type Result<T> = std::result::Result<T, Error>;
+
+#[derive(Default, Clone, Copy)]
+pub enum PathGlob {
+    #[default]
+    Skip,
+    Add,
+    Push,
+    PushAdd,
+}
+
+impl PathGlob {
+    pub fn is_push(self) -> bool {
+        matches!(self, PathGlob::Push | PathGlob::PushAdd)
+    }
+    pub fn is_add(self) -> bool {
+        matches!(self, PathGlob::Add | PathGlob::PushAdd)
+    }
+    pub fn is_skip(self) -> bool {
+        matches!(self, PathGlob::Skip)
+    }
+    pub fn push(self) -> Self {
+        match self {
+            PathGlob::Skip => PathGlob::Push,
+            PathGlob::Add => PathGlob::PushAdd,
+            _ => panic!("Cannot add 'push' to a PathGlob that already has push"),
+        }
+    }
+    pub fn add(self) -> Self {
+        match self {
+            PathGlob::Skip => PathGlob::Add,
+            PathGlob::Push => PathGlob::PushAdd,
+            _ => panic!("Cannot add 'add' to a PathGlob that already has add"),
+        }
+    }
+}
+
+//tp PathSet
+#[derive(Default, Debug, Clone)]
+pub struct PathSet {
+    paths: Vec<PathBuf>,
+}
+
+//ip PathSet
+impl PathSet {
+    //mi glob_path
+    fn glob_path<D, F>(
+        mut paths: Vec<PathBuf>,
+        max: usize,
+        max_depth: usize,
+        dir_filter: &D,
+        file_filter: &F,
+        path: &Path,
+    ) -> Vec<PathBuf>
+    where
+        F: Fn(&Path) -> bool,
+        D: Fn(&Path) -> PathGlob,
+    {
+        if paths.len() >= max {
+            return paths;
+        }
+        if path.is_dir() {
+            let d_ops = dir_filter(path);
+            if d_ops.is_add() {
+                paths.push(path.into());
+            }
+            if max_depth == 0 || paths.len() >= max {
+                return paths;
+            }
+            if d_ops.is_push() {
+                let Ok(contents) = std::fs::read_dir(path) else {
+                    return paths;
+                };
+                // contents is iterator of Result, which can be flatted to ignore errors
+                for p in contents.flatten() {
+                    paths = Self::glob_path(
+                        paths,
+                        max,
+                        max_depth - 1,
+                        dir_filter,
+                        file_filter,
+                        &p.path(),
+                    );
+                }
+            }
+        } else if path.is_file() && file_filter(path) {
+            paths.push(path.into());
+        }
+        paths
+    }
+
+    //mp glob
+    pub fn glob<D, F>(
+        &self,
+        max: usize,
+        max_depth: usize,
+        dir_filter: &D,
+        file_filter: &F,
+    ) -> Vec<PathBuf>
+    where
+        F: Fn(&Path) -> bool,
+        D: Fn(&Path) -> PathGlob,
+    {
+        let mut paths = vec![];
+        for p in self.paths.iter() {
+            paths = Self::glob_path(paths, max, max_depth, dir_filter, file_filter, p);
+        }
+        paths
+    }
+
+    /// Clear the path set
+    pub fn clear(&mut self) {
+        self.paths.clear();
+    }
+
+    /// Add a new path (that must exist)
+    pub fn add_path<P: AsRef<Path> + std::fmt::Display>(&mut self, path: P) -> Result<()> {
+        let path = path.as_ref();
+        if !path.exists() {
+            Err(Error::PathCannotAdd {
+                path: path.to_owned(),
+            })
+        } else {
+            self.paths.push(path.into());
+            Ok(())
+        }
+    }
+
+    /// Given a path, try to find the path in the set it derives most closely from
+    pub fn get_relative_path<P: AsRef<Path>>(&self, path: P) -> Option<(PathBuf, PathBuf)> {
+        let path = path.as_ref();
+        for p in &self.paths {
+            if let Ok(path) = path.strip_prefix(p) {
+                return Some((p.into(), path.into()));
+            }
+        }
+        None
+    }
+
+    /// Find a file within the path set
+    pub fn find_file<P: AsRef<Path>>(&self, path: P) -> Option<PathBuf> {
+        if path.as_ref().exists() {
+            Some(path.as_ref().into())
+        } else {
+            for p in &self.paths {
+                let try_path = p.join(path.as_ref());
+                if try_path.exists() {
+                    return Some(try_path);
+                }
+            }
+            None
+        }
+    }
+
+    //mp find_file_err
+    pub fn find_file_err<P: AsRef<Path>>(&self, path: P) -> Result<PathBuf> {
+        if let Some(path) = self.find_file(&path) {
+            Ok(path)
+        } else {
+            let path = path.as_ref().to_owned();
+            Err(Error::PathNotFoundOnPathSet { path })
+        }
+    }
+}
