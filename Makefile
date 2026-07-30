@@ -49,9 +49,12 @@ js:
 zip: album.zip
 
 album.zip: http http/javascript http/wasm
-	rm album.zip
+	rm -f album.zip
 
 	zip album.zip favicon.ico
 	zip album.zip http/index.html
+	zip album.zip http/*css
 	zip album.zip http/javascript
+	zip album.zip http/javascript/*js
 	zip album.zip http/wasm
+	zip album.zip http/wasm/*
