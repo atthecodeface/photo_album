@@ -46,16 +46,12 @@ js:
 	npx tsc -b
 
 .PHONY: zip
-zip: star_catalog.zip
+zip: album.zip
 
-star_catalog.zip: http pkg javascript
-	rm star_catalog.zip
+album.zip: http http/javascript http/wasm
+	rm album.zip
 
-	zip star_catalog.zip favicon.ico
-	zip star_catalog.zip http/index.html
-
-	zip star_catalog.zip javascript/*.js
-
-	zip star_catalog.zip pkg/package.json
-	zip star_catalog.zip pkg/star_catalog_wasm.js
-	zip star_catalog.zip pkg/star_catalog_wasm_bg.wasm.d.ts
+	zip album.zip favicon.ico
+	zip album.zip http/index.html
+	zip album.zip http/javascript
+	zip album.zip http/wasm
