@@ -1,0 +1,121 @@
+.tab-list {
+    ul {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        border-top: 2px;
+        border-top-style: solid;
+        border-bottom-width: 3px;
+        border-bottom-style: solid;
+
+        position: fixed;
+        left: 0px;
+        right: 0px;
+
+        /* same as li.active a */
+        background-color: #ccc;
+        border-bottom-color: #666;
+
+        li {
+            float: left;
+            label {
+                display: block;
+                text-align: bottom;
+                padding: 6px 12px;
+                text-decoration: none;
+            }
+            a {
+                display: block;
+                text-align: center;
+                padding: 6px 12px;
+                text-decoration: none;
+                color: black;
+            }
+            a:hover {
+                background-color: #ddd;
+            }
+        }
+        li.active a {
+            pointer-events: none;
+            color: #fff;
+            background: #666;
+        }
+        li.right {
+            float: right;
+        }
+    }
+}
+
+html {
+    margin: 0px;
+    body {
+        margin: 0px;
+    }
+    td {
+        padding: 0px;
+        margin: 0px;
+    }
+    input {
+        padding: 0px;
+        margin: 0px;
+    }
+}
+
+.fixed-div {
+    z-index: 0;
+    position: fixed;
+    touch-action: auto;
+    overflow: scroll;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+}
+
+.floating-div {
+    /* The outer div - force it to be the *whole* frame */
+    z-index: -1;
+    position: fixed;
+    top: 0px;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+
+    .flex.box {
+        /* Inside the outder div, pack it in completely
+
+        The content may want to be larger, but if allowed to grow/shrink then all will be good
+        */
+        display: flex;
+        flex-flow: column;
+        position: absolute;
+        top: 0px;
+        bottom: 0px;
+        left: 0px;
+        right: 0px;
+
+        .flex.content {
+            /* The div where the canvas will go - this will flex to fill the whole frame
+            */
+            flex: 1 1 auto;
+        }
+
+        .flex.fixed {
+            flex: 0 1 min-content;
+        }
+
+        .flex.footer {
+            flex: 0 1 0px;
+        }
+    }
+}
+
+.album_content {
+    a:visited {
+        color: inherit;
+    }
+    a {
+        color: inherit;
+    }
+}

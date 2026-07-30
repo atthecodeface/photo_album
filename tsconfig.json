@@ -1,0 +1,67 @@
+{
+  // Visit https://aka.ms/tsconfig to read more about this file
+  "compilerOptions": {
+    "rootDir": "./typescript/",
+    "outDir": "./http/javascript/",
+
+    "target": "es2017",
+    // Not strictly needed
+    // "sourceMap": true,
+    // "declaration": true,
+    // "declarationMap": true,
+
+    // Stricter Typechecking Options
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+
+    // Style Options
+    "noImplicitReturns": true,
+    "noImplicitOverride": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noPropertyAccessFromIndexSignature": true,
+
+    // Recommended Options
+    "strict": true,
+    "jsx": "react-jsx",
+
+    // "verbatimModuleSyntax": true,
+    // "isolatedModules": true,
+    "noUncheckedSideEffectImports": true,
+    "moduleDetection": "force",
+    "skipLibCheck": true,
+    // Needed for testing in jest
+    // "module": "node16",
+    // Needed for testing in jest
+    // "moduleResolution": "node16",
+    "types": [
+      // Enable 'jest' for testing
+      // "jest",
+      // Enable 'node' for use with some jest tests
+      // "node",
+      // "shaders",
+    ],
+    // "typeRoots": ["./typescript/@types"],
+  },
+
+  // "include": ["pkg/*"],
+
+  "files": [
+    "typescript/application.ts",
+    "typescript/color.ts",
+    "typescript/draw.ts",
+    "typescript/html.ts",
+    "typescript/animate.ts",
+    "typescript/log.ts",
+    "typescript/tabs.ts",
+
+    "typescript/album.ts",
+    "typescript/album_image.ts",
+    "typescript/album_page.ts",
+    "typescript/album_style.ts",
+    "typescript/photo_album.ts",
+
+    "typescript/example_album.ts",
+  ],
+}
