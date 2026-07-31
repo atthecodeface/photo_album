@@ -1,5 +1,5 @@
-use photo_album;
 use photo_album::PathSet;
+use photo_album::{self, Album};
 
 use serde_yaml;
 
@@ -20,18 +20,22 @@ pub struct PhotoAlbumCommand {
     arg_usizes: Vec<usize>,
 }
 
+type Error = photo_album::Error;
+type PACResult<T> = std::result::Result<T, Error>;
+type PACCmdResult = PACResult<json::Value>;
+
 impl CommandArgs for PhotoAlbumCommand {
-    type Error = photo_album::Error;
+    type Error = Error;
     type Value = json::Value;
     const PROPERTIES: &[thunderclap::CmdProperty<'static, Self, Self::Value, Self::Error>] = &[];
-    fn value_from_str(s: &str) -> Result<Self::Value, Self::Error> {
+    fn value_from_str(s: &str) -> PACCmdResult {
         if let Ok(v) = serde_json::from_str::<Self::Value>(s) {
             return Ok(v);
         }
         let v = serde_json::to_value(s)?;
         Ok(v)
     }
-    fn cmd_ok() -> std::result::Result<Self::Value, Self::Error> {
+    fn cmd_ok() -> PACCmdResult {
         Ok("".into())
     }
     fn reset_args(&mut self) {
@@ -56,6 +60,9 @@ impl PhotoAlbumCommand {
     }
     pub fn pretty_json(&self) -> bool {
         self.pretty_json
+    }
+    pub fn read_filename(&self) -> Option<&str> {
+        self.read_filename.as_deref()
     }
 
     const ARG_VERBOSE: ArgDescriptor<PhotoAlbumCommand> = ArgDescriptor::arg_flag(
@@ -125,10 +132,26 @@ impl PhotoAlbumCommand {
         .handler(&Self::main)
         .cmds(&[]);
 
-    pub fn main(&mut self) -> Result<<Self as CommandArgs>::Value, <Self as CommandArgs>::Error> {
+    pub fn scale_images(&mut self) -> PACCmdResult {
         let r = std::fs::File::open("temp.yaml")?;
         let x = serde_yaml::from_reader::<_, photo_album::desc::AlbumDesc>(r)?;
         let s = x.to_album(&self.file_path_set)?;
+        eprintln!("{s:?}");
+        Self::cmd_ok()
+    }
+
+    fn read_album(&self) -> PACResult<Album> {
+        let Some(f) = self.read_filename() else {
+            return Err("Album descriptor filename not supplied".into());
+        };
+        let r = std::fs::File::open(f)?;
+        let desc = serde_yaml::from_reader::<_, photo_album::desc::AlbumDesc>(r)?;
+        let album = desc.to_album(&self.file_path_set)?;
+        Ok(album)
+    }
+
+    pub fn main(&mut self) -> PACCmdResult {
+        let s = self.read_album()?;
         eprintln!("{s:?}");
         Self::cmd_ok()
     }

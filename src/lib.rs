@@ -1,5 +1,3 @@
-use std::path::PathBuf;
-
 use thiserror::Error;
 
 pub mod path_set;
@@ -19,10 +17,20 @@ pub enum Error {
     Desc(#[from] desc::Error),
     #[error("{0}")]
     PathSet(#[from] path_set::Error),
+    #[error("{0}")]
+    String(String),
 }
+
+impl From<&str> for Error {
+    fn from(value: &str) -> Self {
+        Error::String(value.to_owned())
+    }
+}
+
 pub type Result<T> = std::result::Result<T, Error>;
 
 pub(crate) mod indexed;
+// This enables indexed to use $crate :: Idx in its macro
 pub(crate) use indexed::Idx;
 
 pub mod album;

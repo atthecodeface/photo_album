@@ -1,7 +1,10 @@
+//a Imports
 use std::marker::PhantomData;
 
 use super::Idx;
 
+//a IndexedSlice
+//tp IndexedSlice
 /// This is a type-wrapper for a standard slice, which is indexed by a
 /// type which support Idx. It should exist only the form
 /// `IndexedSlice<I,[D]>` for some data type D
@@ -74,6 +77,13 @@ where
     pub fn get_mut(&mut self, index: I) -> Option<&mut T> {
         self.slice.get_mut(index.index())
     }
+
+    //ap iter_mut
+    /// Get a iterator over references to our values.
+    #[inline]
+    pub fn iter_mut<'iter>(&'iter mut self) -> std::slice::IterMut<'iter, T> {
+        self.slice.iter_mut()
+    }
 }
 
 //ip IndexedSlice
@@ -113,7 +123,7 @@ where
         self.slice.len()
     }
 
-    //ap len
+    //ap len_idx
     /// Returns the length of the wrapped slice as an `I`.
     #[inline]
     pub fn len_idx(&self) -> I {
@@ -159,6 +169,23 @@ where
         T: PartialEq,
     {
         self.slice.contains(x)
+    }
+
+    //ap binary_search_by
+    pub fn binary_search_by<'a, F>(&'a self, f: F) -> Result<usize, usize>
+    where
+        F: FnMut(&'a T) -> std::cmp::Ordering,
+    {
+        self.slice.binary_search_by(f)
+    }
+
+    //ap binary_search
+    #[inline(always)]
+    pub fn binary_search(&self, x: &T) -> Result<usize, usize>
+    where
+        T: Ord,
+    {
+        self.slice.binary_search(x)
     }
 
     //ap position
