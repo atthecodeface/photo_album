@@ -1,20 +1,22 @@
 use std::path::Path;
+use std::path::PathBuf;
 use std::str::FromStr;
-use std::{collections::HashMap, path::PathBuf};
 
 use super::{Error, Image, Page};
 use crate::PathSet;
+use crate::indexed::VecWithIndex;
+
+crate::make_index!(ImageIndex, usize, true);
+crate::make_index!(PageIndex, usize, true);
 
 #[derive(Debug, Default)]
 pub struct Album {
     path_set: PathSet,
     /// Source directories for the images
     image_srcs: Vec<PathBuf>,
-    images: Vec<Image>,
-    pages: Vec<Page>,
+    images: VecWithIndex<'static, String, ImageIndex, Image, true>,
+    pages: VecWithIndex<'static, String, PageIndex, Page, true>,
     lod: Vec<usize>,
-    page_index: HashMap<String, usize>,
-    image_index: HashMap<String, usize>,
 }
 
 impl Album {
@@ -41,40 +43,42 @@ impl Album {
         Ok(())
     }
 
-    pub fn add_image(&mut self, img: Image) -> Result<(), Error> {
-        eprintln!("Add image {}", img.name());
-        let n = self.images.len();
+    pub fn add_image(&mut self, img: Image) -> Result<ImageIndex, Error> {
         let name = img.name().to_owned();
-        self.images.push(img);
-        self.image_index.insert(name, n);
-        Ok(())
+        let err_name = name.clone();
+        self.images
+            .insert(name, |_| img)
+            .map_err(|_e| Error::AlbumAlreadyContainsImage {
+                image_name: err_name,
+            })
     }
 
-    pub fn add_page(&mut self, page: Page) -> Result<(), Error> {
-        let n = self.pages.len();
+    pub fn add_page(&mut self, page: Page) -> Result<PageIndex, Error> {
         let name = page.name().to_owned();
-        self.pages.push(page);
-        self.page_index.insert(name, n);
-        Ok(())
+        let err_name = name.clone();
+        self.pages
+            .insert(name, |_| page)
+            .map_err(|_e| Error::AlbumAlreadyContainsPage {
+                page_name: err_name,
+            })
     }
 
-    pub fn find_image_index(&self, image_name: &str) -> Result<usize, Error> {
-        if let Some(idx) = self.image_index.get(image_name) {
-            Ok(*idx)
+    pub fn find_image_index(&self, image_name: &str) -> Result<ImageIndex, Error> {
+        if let Some(idx) = self.images.find_key(image_name) {
+            Ok(idx)
         } else {
             Err(Error::AlbumDoesNotContainImage {
                 image_name: image_name.to_owned(),
             })
         }
     }
-    pub fn image(&self, idx: usize) -> Option<&Image> {
+    pub fn image(&self, idx: ImageIndex) -> Option<&Image> {
         self.images.get(idx)
     }
 
-    pub fn find_page_index(&self, page_name: &str) -> Result<usize, Error> {
-        eprintln!("Find page {page_name}");
-        if let Some(idx) = self.page_index.get(page_name) {
-            Ok(*idx)
+    pub fn find_page_index(&self, page_name: &str) -> Result<PageIndex, Error> {
+        if let Some(idx) = self.pages.find_key(page_name) {
+            Ok(idx)
         } else {
             Err(Error::AlbumDoesNotContainPage {
                 page_name: page_name.to_owned(),
@@ -82,7 +86,7 @@ impl Album {
         }
     }
 
-    pub fn page(&self, idx: usize) -> Option<&Page> {
+    pub fn page(&self, idx: PageIndex) -> Option<&Page> {
         self.pages.get(idx)
     }
 

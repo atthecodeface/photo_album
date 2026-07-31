@@ -9,6 +9,14 @@ use super::Idx;
 /// type which support Idx. It should exist only the form
 /// `IndexedSlice<I,[D]>` for some data type D
 ///
+/// I is the index type, which must implement 'Idx' and is usually created using make_index!
+///
+/// D is the data contents of the vector
+///
+/// M is true if the vector contents are mutable (and IndexMut is implemented
+/// for the vector, for example). If M is false then the contents are immutable
+/// after initial addition
+///
 /// An `IndexedSlice<[T]>` is created *from* a standard slice; the
 /// 'slice' in the IndexedSlice is guaranteed to be bit-copy identical
 /// to the underlying slice, as it *is* the underlying slice. Because
@@ -23,10 +31,10 @@ use super::Idx;
 /// The type T is a slice [D]
 #[derive(Copy, Clone)]
 #[repr(transparent)]
-pub struct IndexedSlice<I, T, const M: bool>
+pub struct IndexedSlice<I, D, const M: bool>
 where
     I: Idx,
-    T: ?Sized,
+    D: ?Sized,
 {
     _marker: PhantomData<fn(&I)>,
 
@@ -34,14 +42,14 @@ where
     ///
     /// Must be last in the type as IndexedSlice is a DST (dynamically
     /// sized type), driven by the slice T
-    slice: T,
+    slice: D,
 }
 
 //ip Debug for IndexedSlice<I, T, M>
-impl<I, T, const M: bool> std::fmt::Debug for IndexedSlice<I, T, M>
+impl<I, D, const M: bool> std::fmt::Debug for IndexedSlice<I, D, M>
 where
     I: Idx,
-    T: std::fmt::Debug + ?Sized,
+    D: std::fmt::Debug + ?Sized,
 {
     fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
         self.slice.fmt(fmt)
@@ -49,17 +57,17 @@ where
 }
 
 //ip IndexedSlice (mutable)
-impl<I, T> IndexedSlice<I, [T], true>
+impl<I, D> IndexedSlice<I, [D], true>
 where
     I: Idx,
-    T: Sized,
+    D: Sized,
 {
     //cp from_slice_mut
     /// Construct a new IndexedSlice by type-wrapping an existing
     /// slice.
     #[inline(always)]
-    pub fn from_slice_mut(slice: &mut [T]) -> &mut Self {
-        unsafe { &mut *(slice as *mut [T] as *mut Self) }
+    pub fn from_slice_mut(slice: &mut [D]) -> &mut Self {
+        unsafe { &mut *(slice as *mut [D] as *mut Self) }
     }
 
     //cp new_mut
@@ -67,37 +75,37 @@ where
     /// slice, returning a reference that is effectively borrowed from
     /// the argument
     #[inline(always)]
-    pub fn new_mut<S: AsMut<[T]>>(slice: &mut S) -> &mut Self {
+    pub fn new_mut<S: AsMut<[D]>>(slice: &mut S) -> &mut Self {
         Self::from_slice_mut(slice.as_mut())
     }
     //ap get_mut
     /// Get a mutable reference to the item at the provided index, or
     /// None for out of bounds.
     #[inline]
-    pub fn get_mut(&mut self, index: I) -> Option<&mut T> {
+    pub fn get_mut(&mut self, index: I) -> Option<&mut D> {
         self.slice.get_mut(index.index())
     }
 
     //ap iter_mut
     /// Get a iterator over references to our values.
     #[inline]
-    pub fn iter_mut<'iter>(&'iter mut self) -> std::slice::IterMut<'iter, T> {
+    pub fn iter_mut<'iter>(&'iter mut self) -> std::slice::IterMut<'iter, D> {
         self.slice.iter_mut()
     }
 }
 
 //ip IndexedSlice
-impl<I, T, const M: bool> IndexedSlice<I, [T], M>
+impl<I, D, const M: bool> IndexedSlice<I, [D], M>
 where
     I: Idx,
-    T: Sized,
+    D: Sized,
 {
     //cp new
     /// Construct a new IndexedSlice by type-wrapping an existing
     /// slice, returning a reference that is effectively borrowed from
     /// the argument
     #[inline(always)]
-    pub fn new<S: AsRef<[T]>>(slice: &S) -> &Self {
+    pub fn new<S: AsRef<[D]>>(slice: &S) -> &Self {
         Self::from_slice(slice.as_ref())
     }
 
@@ -105,14 +113,14 @@ where
     /// Construct a new IndexedSlice by type-wrapping an existing
     /// slice.
     #[inline(always)]
-    pub const fn from_slice(slice: &[T]) -> &Self {
-        unsafe { &*(slice as *const [T] as *const Self) }
+    pub const fn from_slice(slice: &[D]) -> &Self {
+        unsafe { &*(slice as *const [D] as *const Self) }
     }
 
     //ap inner
     /// Returns the slice that this type-wraps
     #[inline(always)]
-    pub const fn inner(&self) -> &[T] {
+    pub const fn inner(&self) -> &[D] {
         &self.slice
     }
 
@@ -140,14 +148,14 @@ where
     //ap iter
     /// Get a iterator over references to our values.
     #[inline]
-    pub fn iter<'iter>(&'iter self) -> std::slice::Iter<'iter, T> {
+    pub fn iter<'iter>(&'iter self) -> std::slice::Iter<'iter, D> {
         self.slice.iter()
     }
 
     //ap enumerate
     /// Get an interator over references with an item of `(I, &T)`
     #[inline(always)]
-    pub fn iter_enumerated(&self) -> impl ExactSizeIterator<Item = (I, &T)> {
+    pub fn iter_enumerated(&self) -> impl ExactSizeIterator<Item = (I, &D)> {
         self.slice
             .iter()
             .enumerate()
@@ -164,9 +172,9 @@ where
     //ap contains
     /// Forwards to the slice's `contains` implementation.
     #[inline]
-    pub fn contains(&self, x: &T) -> bool
+    pub fn contains(&self, x: &D) -> bool
     where
-        T: PartialEq,
+        D: PartialEq,
     {
         self.slice.contains(x)
     }
@@ -174,16 +182,16 @@ where
     //ap binary_search_by
     pub fn binary_search_by<'a, F>(&'a self, f: F) -> Result<usize, usize>
     where
-        F: FnMut(&'a T) -> std::cmp::Ordering,
+        F: FnMut(&'a D) -> std::cmp::Ordering,
     {
         self.slice.binary_search_by(f)
     }
 
     //ap binary_search
     #[inline(always)]
-    pub fn binary_search(&self, x: &T) -> Result<usize, usize>
+    pub fn binary_search(&self, x: &D) -> Result<usize, usize>
     where
-        T: Ord,
+        D: Ord,
     {
         self.slice.binary_search(x)
     }
@@ -192,28 +200,28 @@ where
     /// Searches for an element in an iterator, returning its index. This is
     /// equivalent to `Iterator::position`, but returns `I` and not `usize`.
     #[inline(always)]
-    pub fn position<F: FnMut(&T) -> bool>(&self, f: F) -> Option<I> {
+    pub fn position<F: FnMut(&D) -> bool>(&self, f: F) -> Option<I> {
         self.slice.iter().position(f).map(I::from_usize)
     }
 
     //ap last
     /// Return the the last element, if we are not empty.
     #[inline(always)]
-    pub const fn last(&self) -> Option<&T> {
+    pub const fn last(&self) -> Option<&D> {
         self.slice.last()
     }
 
     //ap first
     /// Return the the first element, if we are not empty.
     #[inline]
-    pub const fn first(&self) -> Option<&T> {
+    pub const fn first(&self) -> Option<&D> {
         self.slice.first()
     }
 
     //ap get
     /// Get a ref to the item at the provided index, or None for out of bounds.
     #[inline]
-    pub fn get(&self, index: I) -> Option<&T> {
+    pub fn get(&self, index: I) -> Option<&D> {
         index.opt_index().and_then(|index| self.slice.get(index))
     }
 

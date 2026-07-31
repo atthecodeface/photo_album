@@ -1,22 +1,22 @@
-use super::{Album, Error, Style};
+use super::{Album, Error, ImageIndex, PageIndex, Style};
 
 #[derive(Debug, Default)]
 pub struct PagePage {
     /// Page that this links to
-    page: usize,
+    page: PageIndex,
     /// Caption to use
     caption: String,
     /// Image index of the image to use for this
-    image: usize,
+    image: ImageIndex,
     /// Style
     style: Style,
 }
 
 impl PagePage {
-    pub fn set_image(&mut self, image: usize) {
+    pub fn set_image(&mut self, image: ImageIndex) {
         self.image = image;
     }
-    pub fn set_page(&mut self, page: usize) {
+    pub fn set_page(&mut self, page: PageIndex) {
         self.page = page;
     }
     pub fn set_caption<I: Into<String>>(&mut self, caption: I) {
@@ -28,10 +28,10 @@ impl PagePage {
     pub fn caption(&self) -> &str {
         &self.caption
     }
-    pub fn page(&self) -> usize {
+    pub fn page(&self) -> PageIndex {
         self.page
     }
-    pub fn image(&self) -> usize {
+    pub fn image(&self) -> ImageIndex {
         self.image
     }
 }
@@ -39,7 +39,7 @@ impl PagePage {
 #[derive(Debug, Default)]
 pub struct PageImage {
     /// ImageDesc index (in the site)
-    image: usize,
+    image: ImageIndex,
     /// Caption to override with if any
     caption: String,
     /// Style
@@ -47,7 +47,7 @@ pub struct PageImage {
 }
 
 impl PageImage {
-    pub fn set_image(&mut self, image: usize) {
+    pub fn set_image(&mut self, image: ImageIndex) {
         self.image = image;
     }
     pub fn set_caption<I: Into<String>>(&mut self, caption: I) {
@@ -56,7 +56,7 @@ impl PageImage {
     pub fn set_style(&mut self, style: Style) {
         self.style = style;
     }
-    pub fn image(&self) -> usize {
+    pub fn image(&self) -> ImageIndex {
         self.image
     }
     pub fn caption(&self) -> &str {

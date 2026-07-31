@@ -6,11 +6,14 @@ use super::{Idx, IndexedVec};
 
 //a IndexKey
 //tt IndexKey
-pub trait IndexKey<'key>: Copy + std::fmt::Debug + PartialEq + Eq + std::hash::Hash + 'key {}
+pub trait IndexKey<'key>:
+    Clone + std::fmt::Debug + PartialEq + Eq + std::hash::Hash + 'key
+{
+}
 
 //it IndexKey
 impl<'key, T> IndexKey<'key> for T where
-    T: Copy + std::fmt::Debug + PartialEq + Eq + std::hash::Hash + 'key
+    T: Clone + std::fmt::Debug + PartialEq + Eq + std::hash::Hash + 'key
 {
 }
 
@@ -18,6 +21,16 @@ impl<'key, T> IndexKey<'key> for T where
 //tp VecWithIndex
 /// An [VecWithIndex] is an IndexedVec of items with an array index,
 /// and a dictionary mapping an index key to array indices
+///
+/// K is the type of the key (e.g. String)
+///
+/// I is the index type, which must implement 'Idx' and is usually created using make_index!
+///
+/// D is the data contents of the vector
+///
+/// M is true if the vector contents are mutable (and IndexMut is implemented
+/// for the vector, for example). If M is false then the contents are immutable
+/// after initial addition
 ///
 /// Once an element is added to the VecWithIndex it cannot be removed;
 /// any array index returned by methods is valid for the lifetime of
@@ -170,9 +183,13 @@ where
     K: IndexKey<'vwi>,
     I: Idx + 'vwi,
 {
-    //mp find_key
     /// Find the key in the index, if it is there
-    pub fn find_key(&self, key: &K) -> Option<I> {
+    pub fn find_key<Q>(&self, key: &Q) -> Option<I>
+    where
+        Q: ?Sized,
+        K: std::borrow::Borrow<Q>,
+        Q: std::hash::Hash + Eq,
+    {
         self.index.get(key).copied()
     }
 

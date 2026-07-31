@@ -6,8 +6,12 @@ pub enum Error {
     Io(#[from] std::io::Error),
     #[error("image handling failed {0}")]
     Image(#[from] ::image::ImageError),
+    #[error("album already contains image {image_name}")]
+    AlbumAlreadyContainsImage { image_name: String },
     #[error("album does not contain image {image_name}")]
     AlbumDoesNotContainImage { image_name: String },
+    #[error("album already contains image {page_name}")]
+    AlbumAlreadyContainsPage { page_name: String },
     #[error("album does not contain page {page_name}")]
     AlbumDoesNotContainPage { page_name: String },
     #[error("{0}")]
@@ -21,7 +25,7 @@ mod image;
 mod page;
 mod style;
 
-pub use album::Album;
+pub use album::{Album, ImageIndex, PageIndex};
 pub use image::{Image, ImageData};
 pub use page::{Page, PageImage, PagePage};
 pub use style::Style;

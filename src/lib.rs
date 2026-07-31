@@ -29,6 +29,7 @@ impl From<&str> for Error {
 
 pub type Result<T> = std::result::Result<T, Error>;
 
+#[macro_use]
 pub(crate) mod indexed;
 // This enables indexed to use $crate :: Idx in its macro
 pub(crate) use indexed::Idx;

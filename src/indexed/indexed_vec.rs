@@ -6,16 +6,24 @@ use super::{Idx, IndexedSlice};
 //a IndexedVec
 //tp IndexedVec
 /// An [IndexedVec] is a Vec of items with an index
-pub struct IndexedVec<I, T, const M: bool>
+///
+/// I is the index type, which must implement 'Idx' and is usually created using make_index!
+///
+/// D is the data contents of the vector
+///
+/// M is true if the vector contents are mutable (and IndexMut is implemented
+/// for the vector, for example). If M is false then the contents are immutable
+/// after initial addition
+///
+pub struct IndexedVec<I, D, const M: bool>
 where
     I: Idx,
 {
-    array: Vec<T>,
+    array: Vec<D>,
     _phantom: PhantomData<fn(&I)>,
 }
 
-//ip Default for IndexedVec<I, T, M>
-impl<I, T, const M: bool> std::default::Default for IndexedVec<I, T, M>
+impl<I, D, const M: bool> std::default::Default for IndexedVec<I, D, M>
 where
     I: Idx,
 {
@@ -29,28 +37,28 @@ where
 }
 
 //ip Index<Handle> for IndexedVec
-impl<I, T, const M: bool> std::ops::Index<I> for IndexedVec<I, T, M>
+impl<I, D, const M: bool> std::ops::Index<I> for IndexedVec<I, D, M>
 where
     I: Idx,
 {
-    type Output = T;
-    fn index(&self, idx: I) -> &T {
+    type Output = D;
+    fn index(&self, idx: I) -> &D {
         &self.array[idx.index()]
     }
 }
 
 //ip IndexMut<Handle> for mutable IndexedVec
-impl<I, T> std::ops::IndexMut<I> for IndexedVec<I, T, true>
+impl<I, D> std::ops::IndexMut<I> for IndexedVec<I, D, true>
 where
     I: Idx,
 {
-    fn index_mut(&mut self, idx: I) -> &mut T {
+    fn index_mut(&mut self, idx: I) -> &mut D {
         &mut self.array[idx.index()]
     }
 }
 
 //ip IndexedVec (mutable and immutable)
-impl<I, T, const M: bool> IndexedVec<I, T, M>
+impl<I, D, const M: bool> IndexedVec<I, D, M>
 where
     I: Idx,
 {
@@ -65,14 +73,14 @@ where
     //ap as_slice
     /// Return an [IndexSlice] for the contents
     #[inline(always)]
-    pub fn as_slice(&self) -> &IndexedSlice<I, [T], M> {
+    pub fn as_slice(&self) -> &IndexedSlice<I, [D], M> {
         IndexedSlice::new(&self.array)
     }
 
     //mp push
     /// Push a new item onto the vector, and return it's index.
     #[inline]
-    pub fn push(&mut self, d: T) -> I {
+    pub fn push(&mut self, d: D) -> I {
         let index = self.next_index();
         self.array.push(d);
         index
@@ -81,7 +89,7 @@ where
     //ap get
     /// Get a ref to the item at the provided index, or None for out of bounds.
     #[inline]
-    pub fn get(&self, index: I) -> Option<&T> {
+    pub fn get(&self, index: I) -> Option<&D> {
         self.as_slice().get(index)
     }
 
@@ -149,71 +157,71 @@ where
 }
 
 //ip IntoIter for IndexedVec
-impl<'a, I, T, const M: bool> std::iter::IntoIterator for &'a IndexedVec<I, T, M>
+impl<'a, I, D, const M: bool> std::iter::IntoIterator for &'a IndexedVec<I, D, M>
 where
     I: Idx,
 {
-    type Item = &'a T;
-    type IntoIter = std::slice::Iter<'a, T>;
+    type Item = &'a D;
+    type IntoIter = std::slice::Iter<'a, D>;
 
     // Required method
-    fn into_iter(self) -> std::slice::Iter<'a, T> {
+    fn into_iter(self) -> std::slice::Iter<'a, D> {
         self.array.iter()
     }
 }
 
 //ip AsRef<[T]> for IndexedVec
-impl<I, T, const M: bool> AsRef<[T]> for IndexedVec<I, T, M>
+impl<I, D, const M: bool> AsRef<[D]> for IndexedVec<I, D, M>
 where
     I: Idx,
 {
     #[inline]
-    fn as_ref(&self) -> &[T] {
+    fn as_ref(&self) -> &[D] {
         &self.array
     }
 }
 
 //ip AsRef<IndexedSlice<I, [T]>> for IndexedVec
-impl<I, T, const M: bool> AsRef<IndexedSlice<I, [T], M>> for IndexedVec<I, T, M>
+impl<I, D, const M: bool> AsRef<IndexedSlice<I, [D], M>> for IndexedVec<I, D, M>
 where
     I: Idx,
 {
     #[inline]
-    fn as_ref(&self) -> &IndexedSlice<I, [T], M> {
+    fn as_ref(&self) -> &IndexedSlice<I, [D], M> {
         IndexedSlice::new(&self.array)
     }
 }
 
 //ip Deref for IndexedVec
-impl<I, T, const M: bool> std::ops::Deref for IndexedVec<I, T, M>
+impl<I, D, const M: bool> std::ops::Deref for IndexedVec<I, D, M>
 where
     I: Idx,
 {
-    type Target = IndexedSlice<I, [T], M>;
+    type Target = IndexedSlice<I, [D], M>;
     #[inline]
-    fn deref(&self) -> &IndexedSlice<I, [T], M> {
+    fn deref(&self) -> &IndexedSlice<I, [D], M> {
         IndexedSlice::new(&self.array)
     }
 }
 
 //ip AsMut<IndexedSlice<I, [T]>> for IndexedVec
-impl<I, T> AsMut<IndexedSlice<I, [T], true>> for IndexedVec<I, T, true>
+impl<I, D> AsMut<IndexedSlice<I, [D], true>> for IndexedVec<I, D, true>
 where
     I: Idx,
 {
     #[inline]
-    fn as_mut(&mut self) -> &mut IndexedSlice<I, [T], true> {
+    fn as_mut(&mut self) -> &mut IndexedSlice<I, [D], true> {
         IndexedSlice::new_mut(&mut self.array)
     }
 }
 
 //ip DerefMut for IndexedVec mutable
-impl<I, T> std::ops::DerefMut for IndexedVec<I, T, true>
+impl<I, D> std::ops::DerefMut for IndexedVec<I, D, true>
 where
     I: Idx,
 {
     #[inline]
-    fn deref_mut(&mut self) -> &mut IndexedSlice<I, [T], true> {
+    fn deref_mut(&mut self) -> &mut IndexedSlice<I, [D], true> {
         IndexedSlice::new_mut(&mut self.array)
     }
 }
