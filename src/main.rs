@@ -119,6 +119,12 @@ impl PhotoAlbumCommand {
         },
     );
 
+    const SCALE_IMAGES_CMD: CmdDescriptor<Self> = CmdDescriptor::new("scale_images")
+        .about("scale the images and write to the output directory")
+        .args(&[])
+        .handler(&Self::scale_images)
+        .cmds(&[]);
+
     const BASE_CMD: CmdDescriptor<Self> = CmdDescriptor::new("photo_album")
         .about("Photo album creator")
         .version("0.1.0")
@@ -130,15 +136,7 @@ impl PhotoAlbumCommand {
             Self::ARG_READ_FILENAME,
         ])
         .handler(&Self::main)
-        .cmds(&[]);
-
-    pub fn scale_images(&mut self) -> PACCmdResult {
-        let r = std::fs::File::open("temp.yaml")?;
-        let x = serde_yaml::from_reader::<_, photo_album::desc::AlbumDesc>(r)?;
-        let s = x.to_album(&self.file_path_set)?;
-        eprintln!("{s:?}");
-        Self::cmd_ok()
-    }
+        .cmds(&[Self::SCALE_IMAGES_CMD]);
 
     fn read_album(&self) -> PACResult<Album> {
         let Some(f) = self.read_filename() else {
@@ -146,8 +144,42 @@ impl PhotoAlbumCommand {
         };
         let r = std::fs::File::open(f)?;
         let desc = serde_yaml::from_reader::<_, photo_album::desc::AlbumDesc>(r)?;
-        let album = desc.to_album(&self.file_path_set)?;
+        let mut album = desc.to_album(&self.file_path_set)?;
+        album.derive_data()?;
         Ok(album)
+    }
+
+    pub fn scale_images(&mut self) -> PACCmdResult {
+        let album = self.read_album()?;
+        for img in album.images() {
+            let rgb_image = img.read_img()?;
+            for img_data in img.image_data() {
+                let Some(path) = img_data.image_file() else {
+                    continue;
+                };
+                let lod = img_data.lod();
+                if path.exists() {
+                    continue;
+                }
+                if lod.is_unscaled() {
+                    std::fs::copy(img.src(), path)?;
+                } else {
+                    let w = img_data.width();
+                    let h = img_data.height();
+                    let resized_image = image::imageops::resize(
+                        &rgb_image,
+                        w,
+                        h,
+                        image::imageops::FilterType::CatmullRom,
+                    );
+                    resized_image.save(path).map_err(|e| {
+                        let e: photo_album::album::Error = e.into();
+                        e
+                    })?;
+                }
+            }
+        }
+        Self::cmd_ok()
     }
 
     pub fn main(&mut self) -> PACCmdResult {

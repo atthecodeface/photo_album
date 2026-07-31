@@ -87,7 +87,7 @@ where
             if !first {
                 fmt.write_str(", ")?;
             }
-            let d = &self.array[*h];
+            let d = self.array.get(*h).unwrap();
             write!(fmt, "{h:?}: {d:?}")?;
             first = false;
         }
