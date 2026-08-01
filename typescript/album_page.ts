@@ -86,15 +86,6 @@ export interface AlbumEntryDesc {
   entries?: AlbumEntryDesc[];
 }
 
-export interface PageLayout {
-  add_entry(album: Album, entry_desc: AlbumEntryDesc): void;
-}
-
-export class PageLayoutTable implements PageLayout {
-  add_entry(_album: Album, _entry_desc: AlbumEntryDesc) { }
-
-}
-
 class LayoutData {
   x: number = 0;
   y: number = 0;
@@ -160,9 +151,10 @@ class Entry {
     album_gui: AlbumGui,
     album: Album,
     parent: HtmlElement,
-    _style: AlbumStyle,
+    styles: [string, string][],
   ) {
     const div = parent.add_ele("div", {}, [["align", "center"]]);
+    div.set_styles(styles);
     this.fill_div(album_gui, album, div);
   }
 
@@ -245,14 +237,12 @@ export class EntryPage extends Entry {
   }
 }
 
-export class AlbumPage {
-  album: Album;
-  layout: PageLayout;
-  style: AlbumStyle;
-  title: string;
-  heading: string;
-  _tag: string;
+export interface PageLayout {
+  add_entry(album: Album, entry_desc: AlbumEntryDesc): void;
+  create_html(album: Album, album_gui: AlbumGui, html: HtmlElement): void;
+}
 
+export class PageLayoutTable implements PageLayout {
   num_columns: number = 0;
   num_rows: number = 0;
 
@@ -260,57 +250,19 @@ export class AlbumPage {
   entries: Map<number, Entry>;
   rows_cols: Map<number, number[]>;
 
-  constructor(
-    album: Album,
-    tag: string,
-    title: string,
-    style: AlbumStyle = new AlbumStyle(),
-    layout: PageLayout = new PageLayoutTable(),
-  ) {
-    this.album = album;
-    this._tag = tag;
-    this.style = style;
-    this.title = title;
-    this.heading = title;
-    this.layout = layout;
+  constructor() {
     this.entries = new Map();
     this.rows_cols = new Map();
   }
 
-  static of_json(
-    album: Album,
-    {
-      tag: t = "<no tag>",
-      title: tt = "<no title given>",
-      // layout: al = "grid",
-      entries: e = [],
-    }: AlbumPageDesc,
-  ): AlbumPage {
-    const page = new AlbumPage(album, t, tt);
-    /*
-    if (al == "placed") {
-      page.layout = AlbumPageLayoutType.Placed;
-    }
-    */
-    for (const entry_desc of e) {
-      const entry = Entry.of_json(album, entry_desc);
-      page.add_entry(entry);
-    }
-    return page;
-  }
+  add_entry(album: Album, entry_desc: AlbumEntryDesc) {
+    const entry = Entry.of_json(album, entry_desc);
 
-  tag(): string {
-    return this._tag;
-  }
-
-  private add_entry(
-    e: Entry,
-  ) {
-    const lx = e.layout.x;
-    const ty = e.layout.y;
-    const num_rows = e.layout.num_rows;
-    const num_cols = e.layout.num_cols;
-    this.entries.set(lx + 1000 * ty, e);
+    const lx = entry.layout.x;
+    const ty = entry.layout.y;
+    const num_rows = entry.layout.num_rows;
+    const num_cols = entry.layout.num_cols;
+    this.entries.set(lx + 1000 * ty, entry);
 
     if (this.rows_cols.get(ty) === undefined) {
       this.rows_cols.set(ty, []);
@@ -324,21 +276,10 @@ export class AlbumPage {
     }
   }
 
-  mk_body(album_gui: AlbumGui, html: HtmlElement) {
-    html.clear();
-    this.style.ele_style_attr(html, [
-      "color",
-      "background",
-      "pad",
-      "border",
-      "margin",
-    ]);
+  create_html(album: Album, album_gui: AlbumGui, html: HtmlElement) {
     const table = html.add_ele("table");
-    // text = doc.createTextNode(this.heading);
-    // h1.appendChild(text);
-    // div.appendChild(h1);
-    // table = this.mk_table_of_entries(doc);
-    // table.setAttribute("align", "center");
+    // This was an attribute
+    table.set_styles([["align", "center"]]);
 
     for (let y = 0; y <= this.num_rows; y++) {
       const tr = table.add_ele("tr");
@@ -366,9 +307,123 @@ export class AlbumPage {
             tag_values.push(["rowspan", entry.layout.num_rows.toString()]);
           }
           const td = tr.add_ele("td", {}, tag_values);
-          entry.create_div(album_gui, this.album, td, this.style);
+          entry.create_div(album_gui, album, td, []);
         }
       }
     }
+  }
+}
+
+export class PageLayoutPlace implements PageLayout {
+  bbox: [number, number, number, number];
+  entries: Entry[];
+
+  constructor() {
+    this.entries = [];
+    this.bbox = [0, 0, 0, 0];
+  }
+
+  add_entry(album: Album, entry_desc: AlbumEntryDesc) {
+    const entry = Entry.of_json(album, entry_desc);
+
+    const x = entry.layout.x;
+    const y = entry.layout.y;
+    const w = entry.layout.w;
+    const h = entry.layout.h;
+    this.bbox[0] = Math.min(this.bbox[0], x - w / 2);
+    this.bbox[1] = Math.min(this.bbox[1], y - h / 2);
+    this.bbox[2] = Math.max(this.bbox[2], x + w / 2);
+    this.bbox[3] = Math.max(this.bbox[3], y + h / 2);
+    this.entries.push(entry);
+  }
+
+  create_html(album: Album, album_gui: AlbumGui, html: HtmlElement) {
+    const div = html.add_ele("div");
+    const width = this.bbox[2] - this.bbox[0];
+    const height = this.bbox[3] - this.bbox[1];
+    div.set_styles([
+      ["width", `${width}px`],
+      ["height", `${height}px`],
+    ]);
+    const dx = this.bbox[0];
+    const dy = this.bbox[1];
+    for (const e of this.entries) {
+      const lx = e.layout.x - e.layout.w / 2 - dx;
+      const ty = e.layout.y - e.layout.h / 2 - dy;
+      const rx = lx + e.layout.w;
+      const by = ty + e.layout.h;
+      const styles: [string, string][] = [
+        ["position", "absolute"],
+        ["left", `${lx}px`],
+        ["right", `${rx}px`],
+        ["top", `${ty}px`],
+        ["bottom", `${by}px`],
+      ];
+      e.create_div(album_gui, album, div, styles);
+    }
+  }
+}
+
+export class AlbumPage {
+  album: Album;
+  layout: PageLayout;
+  style: AlbumStyle;
+  title: string;
+  heading: string;
+  _tag: string;
+
+  constructor(
+    album: Album,
+    tag: string,
+    title: string,
+    layout: PageLayout = new PageLayoutTable(),
+    style: AlbumStyle = new AlbumStyle(),
+  ) {
+    this.album = album;
+    this._tag = tag;
+    this.style = style;
+    this.title = title;
+    this.heading = title;
+    this.layout = layout;
+  }
+
+  static of_json(
+    album: Album,
+    {
+      tag: t = "<no tag>",
+      title: tt = "<no title given>",
+      layout: al = "grid",
+      entries: e = [],
+    }: AlbumPageDesc,
+  ): AlbumPage {
+    let layout : PageLayout = new PageLayoutTable();
+    if (al == "placed") {
+      layout = new PageLayoutPlace();
+    }
+    const page = new AlbumPage(album, t, tt, layout);
+
+    for (const entry_desc of e) {
+      page.layout.add_entry(album, entry_desc);
+    }
+    return page;
+  }
+
+  tag(): string {
+    return this._tag;
+  }
+
+  mk_body(album_gui: AlbumGui, html: HtmlElement) {
+    html.clear();
+    this.style.ele_style_attr(html, [
+      "color",
+      "background",
+      "pad",
+      "border",
+      "margin",
+    ]);
+    // text = doc.createTextNode(this.heading);
+    // h1.appendChild(text);
+    // div.appendChild(h1);
+    this.layout.create_html(this.album, album_gui, html);
   }
 }
