@@ -7,20 +7,16 @@ import { Application } from "./application.js";
 import { Album, AlbumGui } from "./album.js";
 import { HtmlElement } from "./html.js";
 
-import { make_album } from "./example_album.js";
-
 class PhotoAlbumApplication extends Application {
   photo_album: PhotoAlbum | null = null;
-  album_creation: () => Album;
-  constructor(album_creation: () => Album) {
+
+  constructor() {
     super([photo_album_init]);
-    this.album_creation = album_creation;
   }
 
   override application_init() {
     this.photo_album = new PhotoAlbum(
       this.application_search_params,
-      this.album_creation,
     );
   }
 }
@@ -30,15 +26,14 @@ class PhotoAlbum implements AlbumGui {
   album: Album;
   album_div: HtmlElement;
   pages: string[] = [];
-  constructor(search_params: URLSearchParams, album_creation: () => Album) {
+  constructor(search_params: URLSearchParams) {
     console.log(search_params);
 
     this.tabs = new Tabs("tab-list", this.tab_select.bind(this), []);
     this.tabs.add_tab("album", "Album", 0);
 
-    this.album = album_creation();
+    this.album = new Album();
     this.album_div = new HtmlElement(document.getElementById("album_content")!);
-    this.album_set_default_page();
 
     this.tabs.add_action("Previous", this.album_set_previous_page.bind(this));
     this.tabs.add_action("Top", this.album_set_default_page.bind(this));
@@ -98,4 +93,4 @@ class PhotoAlbum implements AlbumGui {
   }
 }
 
-(window as any).application = new PhotoAlbumApplication(make_album);
+(window as any).application = new PhotoAlbumApplication();

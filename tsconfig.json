@@ -62,6 +62,5 @@
     "typescript/album_style.ts",
     "typescript/photo_album.ts",
 
-    "typescript/example_album.ts",
   ],
 }

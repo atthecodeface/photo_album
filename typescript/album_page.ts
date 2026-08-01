@@ -70,85 +70,184 @@ export class PlacedGroup extends PlacedBase implements PlacedItem {
   }
 }
 
+/**
+ * An album page entry description
+ *
+ */
 export interface AlbumEntryDesc {
   x?: number;
   y?: number;
+  w?: number;
+  h?: number;
   num_cols?: number;
   num_rows?: number;
   image?: string;
   page?: string;
+  entries?: AlbumEntryDesc[];
+}
+
+export interface PageLayout {
+  add_entry(album: Album, entry_desc: AlbumEntryDesc): void;
+}
+
+export class PageLayoutTable implements PageLayout {
+  add_entry(_album: Album, _entry_desc: AlbumEntryDesc) { }
+
+}
+
+class LayoutData {
+  x: number = 0;
+  y: number = 0;
+  w: number = 0;
+  h: number = 0;
+  num_cols: number = 1;
+  num_rows: number = 1;
+
+  constructor({
+    x: x = 0,
+    y: y = 0,
+    w: w = 100,
+    h: h = 100,
+    num_cols: num_cols = 1,
+    num_rows: num_rows = 1,
+  }: AlbumEntryDesc) {
+    this.x = x;
+    this.y = y;
+    this.w = w;
+    this.h = h;
+    this.num_cols = num_cols;
+    this.num_rows = num_rows;
+  }
 }
 
 export interface AlbumPageDesc {
   tag?: string;
+  layout?: string;
   title?: string;
   entries?: AlbumEntryDesc[];
 }
 
 class Entry {
-  x: number;
-  y: number;
-  num_cols: number;
-  num_rows: number;
-  img: AlbumImage;
+  layout: LayoutData;
   style: AlbumStyle;
-  page: AlbumPage | null;
 
-  constructor(
-    num_cols: number,
-    num_rows: number,
-    img: AlbumImage,
-    style: AlbumStyle,
-    page: AlbumPage | null = null,
-    x: number = 0,
-    y: number = 0,
-  ) {
-    this.x = x;
-    this.y = y;
-    this.num_cols = num_cols;
-    this.num_rows = num_rows;
-    this.img = img;
+  constructor(layout: LayoutData, style: AlbumStyle = new AlbumStyle()) {
+    this.layout = layout;
     this.style = style;
-    this.page = page;
   }
 
-  static of_json(
-    album: Album,
-    {
-      x: lx = 0,
-      y: ty = 0,
-      num_cols: nc = 1,
-      num_rows: nr = 1,
-      image: i = "",
-      page: p = "",
-    }: AlbumEntryDesc,
-  ): Entry {
-    const img = album.get_image(i);
-    if (img === null) {
-      throw new Error(`Failed to find image ${i} in album`);
+  static of_json(album: Album, desc: AlbumEntryDesc): Entry {
+    if (desc.image === undefined) {
+      throw new Error(`No image specified for page item entry`);
     }
-    const page = p == "" ? null : album.get_page(p);
-    const entry = new Entry(nc, nr, img!, new AlbumStyle(), page, lx, ty);
-    return entry;
+    const image = album.get_image(desc.image);
+    if (image === null) {
+      throw new Error(`Failed to find image ${desc.image} in album`);
+    }
+    const layout = new LayoutData(desc);
+    if (desc.page !== undefined) {
+      const page = album.get_page(desc.page);
+      if (page === null) {
+        throw new Error(`Failed to find page ${desc.page} in album`);
+      }
+      return new EntryPage(page, image, layout, new AlbumStyle());
+    } else {
+      return new EntryImage(image, layout, new AlbumStyle());
+    }
   }
 
   create_div(
     album_gui: AlbumGui,
     album: Album,
     parent: HtmlElement,
-    style: AlbumStyle,
+    _style: AlbumStyle,
   ) {
-    const render_style = style.merged_with(this.style);
-    if (this.page === null) {
-      this.img.create_div(album_gui, album, parent, render_style);
-    } else {
-      this.page.create_div(album_gui, parent, this.img, render_style);
+    const div = parent.add_ele("div", {}, [["align", "center"]]);
+    this.fill_div(album_gui, album, div);
+  }
+
+  fill_div(_album_gui: AlbumGui, _album: Album, _div: HtmlElement): void {}
+}
+
+export class EntryImage extends Entry {
+  img: AlbumImage;
+  constructor(
+    img: AlbumImage,
+    layout: LayoutData,
+    style: AlbumStyle = new AlbumStyle(),
+  ) {
+    super(layout, style);
+    this.img = img;
+  }
+
+  override fill_div(
+    _album_gui: AlbumGui,
+    album: Album,
+    div: HtmlElement,
+  ): HtmlElement {
+    const href_filename = album.img_filename(this.img.filename);
+    const a = div.add_ele("a", {}, [["href", href_filename]]);
+    this.style.ele_style_attr(a, ["color"]);
+    this.img.create_img(album, a, this.layout.w);
+    if (this.img.caption !== null) {
+      div.add_ele("p");
+      const a = div.add_ele("a", { classes: "caption" }, [
+        ["href", href_filename],
+      ]);
+      this.style.ele_style_attr(a, ["color"]);
+      a.add_content(this.img.caption);
     }
+    return div;
+  }
+}
+
+export class EntryPage extends Entry {
+  img: AlbumImage;
+  page: AlbumPage;
+  constructor(
+    page: AlbumPage,
+    img: AlbumImage,
+    layout: LayoutData,
+    style: AlbumStyle = new AlbumStyle(),
+  ) {
+    super(layout, style);
+    this.page = page;
+    this.img = img;
+  }
+  override fill_div(
+    album_gui: AlbumGui,
+    album: Album,
+    div: HtmlElement,
+  ): HtmlElement {
+    const this_tag = this.page.tag();
+    const href = "#select_this_page" + this_tag;
+    this.style.ele_style_attr(div, [
+      "color",
+      "background",
+      "pad",
+      "border",
+      "margin",
+    ]);
+    const a = div.add_ele("a", {}, [["href", href]]);
+    this.style.ele_style_attr(a, ["color"]);
+    a.ele.addEventListener("click", (_e) => album_gui.album_set_page(this_tag));
+    this.img.create_img(album, a, this.layout.w);
+    if (this.page!.title !== null) {
+      div.add_ele("p");
+      const a = div.add_ele("a", { classes: "caption" });
+      this.style.ele_style_attr(a, ["color"]);
+      a.ele.addEventListener("click", (_e) =>
+        album_gui.album_set_page(this_tag),
+      );
+      a.add_content(this.page!.title);
+    }
+    return div;
   }
 }
 
 export class AlbumPage {
   album: Album;
+  layout: PageLayout;
   style: AlbumStyle;
   title: string;
   heading: string;
@@ -166,12 +265,14 @@ export class AlbumPage {
     tag: string,
     title: string,
     style: AlbumStyle = new AlbumStyle(),
+    layout: PageLayout = new PageLayoutTable(),
   ) {
     this.album = album;
     this._tag = tag;
     this.style = style;
     this.title = title;
     this.heading = title;
+    this.layout = layout;
     this.entries = new Map();
     this.rows_cols = new Map();
   }
@@ -181,13 +282,19 @@ export class AlbumPage {
     {
       tag: t = "<no tag>",
       title: tt = "<no title given>",
+      // layout: al = "grid",
       entries: e = [],
     }: AlbumPageDesc,
   ): AlbumPage {
     const page = new AlbumPage(album, t, tt);
+    /*
+    if (al == "placed") {
+      page.layout = AlbumPageLayoutType.Placed;
+    }
+    */
     for (const entry_desc of e) {
       const entry = Entry.of_json(album, entry_desc);
-      page.add_entry(entry, entry.x, entry.y, entry.num_cols, entry.num_rows);
+      page.add_entry(entry);
     }
     return page;
   }
@@ -195,13 +302,14 @@ export class AlbumPage {
   tag(): string {
     return this._tag;
   }
+
   private add_entry(
     e: Entry,
-    lx: number,
-    ty: number,
-    num_cols: number,
-    num_rows: number,
   ) {
+    const lx = e.layout.x;
+    const ty = e.layout.y;
+    const num_rows = e.layout.num_rows;
+    const num_cols = e.layout.num_cols;
     this.entries.set(lx + 1000 * ty, e);
 
     if (this.rows_cols.get(ty) === undefined) {
@@ -214,75 +322,6 @@ export class AlbumPage {
     if (ty + num_rows > this.num_rows) {
       this.num_rows = ty + num_rows;
     }
-  }
-
-  add_image(
-    lx: number,
-    ty: number,
-    tag: string,
-    style: AlbumStyle = new AlbumStyle(),
-    num_cols: number = 1,
-    num_rows: number = 1,
-  ) {
-    const img = this.album.get_image(tag);
-    if (img === null) {
-      throw new Error("Cannot find image " + tag + " in album");
-    }
-    const entry = new Entry(num_cols, num_rows, img, style);
-    this.add_entry(entry, lx, ty, num_cols, num_rows);
-  }
-
-  add_page(
-    lx: number,
-    ty: number,
-    tag: string,
-    img_tag: string,
-    style: AlbumStyle = new AlbumStyle(),
-    num_cols: number = 1,
-    num_rows: number = 1,
-  ) {
-    const page = this.album.get_page(tag);
-    const img = this.album.get_image(img_tag);
-    if (img === null) {
-      throw new Error("Cannot find image " + tag + " in album");
-    }
-    if (page === null) {
-      throw new Error("Cannot find page " + tag + " in album");
-    }
-    const entry = new Entry(num_cols, num_rows, img, style, page);
-    this.add_entry(entry, lx, ty, num_cols, num_rows);
-  }
-
-  create_div(
-    album_gui: AlbumGui,
-    parent: HtmlElement,
-    img: AlbumImage,
-    style: AlbumStyle,
-  ): HtmlElement {
-    const div = parent.add_ele("div", {}, [["align", "center"]]);
-    const href = "#select_this_page" + this.tag;
-    style.ele_style_attr(div, [
-      "color",
-      "background",
-      "pad",
-      "border",
-      "margin",
-    ]);
-    const a = div.add_ele("a", {}, [["href", href]]);
-    style.ele_style_attr(a, ["color"]);
-    const this_tag = this._tag;
-    a.ele.addEventListener("click", (_e) => album_gui.album_set_page(this_tag));
-    img.create_img(this.album, a, style);
-    if (this.title !== null) {
-      div.add_ele("p");
-      const a = div.add_ele("a", { classes: "caption" });
-      style.ele_style_attr(a, ["color"]);
-      a.ele.addEventListener("click", (_e) =>
-        album_gui.album_set_page(this_tag),
-      );
-      a.add_content(this.title);
-    }
-    return div;
   }
 
   mk_body(album_gui: AlbumGui, html: HtmlElement) {
@@ -318,13 +357,13 @@ export class AlbumPage {
             tr.add_ele("td", { classes: "filler" });
           }
         } else {
-          colspan = entry.num_cols;
+          colspan = entry.layout.num_cols;
           const tag_values: [string, string][] = [];
-          if (entry.num_cols > 1) {
-            tag_values.push(["colspan", entry.num_cols.toString()]);
+          if (entry.layout.num_cols > 1) {
+            tag_values.push(["colspan", entry.layout.num_cols.toString()]);
           }
-          if (entry.num_rows > 1) {
-            tag_values.push(["rowspan", entry.num_rows.toString()]);
+          if (entry.layout.num_rows > 1) {
+            tag_values.push(["rowspan", entry.layout.num_rows.toString()]);
           }
           const td = tr.add_ele("td", {}, tag_values);
           entry.create_div(album_gui, this.album, td, this.style);
