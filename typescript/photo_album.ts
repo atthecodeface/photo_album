@@ -18,7 +18,10 @@ class PhotoAlbumApplication extends Application {
   }
 
   override application_init() {
-    this.photo_album = new PhotoAlbum(this.application_search_params, this.album_creation);
+    this.photo_album = new PhotoAlbum(
+      this.application_search_params,
+      this.album_creation,
+    );
   }
 }
 
@@ -27,8 +30,7 @@ class PhotoAlbum implements AlbumGui {
   album: Album;
   album_div: HtmlElement;
   pages: string[] = [];
-  constructor(search_params:URLSearchParams, album_creation: () => Album) {
-
+  constructor(search_params: URLSearchParams, album_creation: () => Album) {
     console.log(search_params);
 
     this.tabs = new Tabs("tab-list", this.tab_select.bind(this), []);
@@ -38,17 +40,45 @@ class PhotoAlbum implements AlbumGui {
     this.album_div = new HtmlElement(document.getElementById("album_content")!);
     this.album_set_default_page();
 
-    this.tabs.add_action("Previous", this.album_set_previous_page.bind(this))
-    this.tabs.add_action("Top", this.album_set_default_page.bind(this))
+    this.tabs.add_action("Previous", this.album_set_previous_page.bind(this));
+    this.tabs.add_action("Top", this.album_set_default_page.bind(this));
     this.tabs.select("album");
+
+    this.fetch_json("/photo_album/typescript/example_album.json")
+      .then(
+        this.album_add_json.bind(this)
+      );
+  }
+
+  album_add_json(json: any):void {
+    try {
+      this.album.of_json(json);
+      this.album_set_default_page();
+    }
+    catch (e) {
+      alert(`Failed to read album json: ${e}`);
+    }
+  }
+
+  async fetch_json(uri:string) {
+      console.log(`fetch(${uri})`);
+      return fetch(uri)
+          .then((response) => {
+              if (!response.ok) {
+                  throw new Error(`Failed to fetch ${uri}: ${response.status}`);
+              }
+              return response.json();
+          })
   }
 
   tab_select(tag: number, tab: string) {
     console.log(tag, tab);
   }
+
   album_set_default_page() {
     this.album_set_page(this.album.default_page);
   }
+
   album_set_previous_page() {
     this.pages.pop();
     const prev_tag = this.pages.pop();
@@ -58,10 +88,13 @@ class PhotoAlbum implements AlbumGui {
       this.album_set_default_page();
     }
   }
+
   album_set_page(page_tag: string) {
     const page = this.album.get_page(page_tag);
     this.pages.push(page_tag);
-    page!.mk_body(this, this.album_div);
+    if (page !== null) {
+      page.mk_body(this, this.album_div);
+    }
   }
 }
 
