@@ -1,16 +1,10 @@
-import { AlbumImage, AlbumImageDesc } from "./album_image.js";
-import { AlbumPage, AlbumPageDesc } from "./album_page.js";
+import { AlbumDesc  } from "./album_desc.js";
+import { AlbumImage } from "./album_image.js";
+import { AlbumPage } from "./album_page.js";
 
 export interface AlbumGui {
   album: Album;
   album_set_page(tag: string): void;
-}
-
-export interface AlbumDesc {
-  default_page?: string;
-  img_rel_dir?: string;
-  images?: AlbumImageDesc[];
-  pages?: AlbumPageDesc[];
 }
 
 export class Album {

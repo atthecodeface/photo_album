@@ -1,17 +1,5 @@
 import { Album } from "./album.js";
-
-export interface AlbumImageDataDesc {
-  filename?: string;
-  width?: number;
-  height?: number;
-  lod?: number;
-}
-
-export interface AlbumImageDesc {
-  tag?: string;
-  caption?: string;
-  data?: AlbumImageDataDesc[];
-}
+import { AlbumImageDesc, AlbumImageDataDesc } from "./album_desc.js";
 
 export class AlbumImageLod {
   filename: string;

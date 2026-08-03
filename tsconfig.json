@@ -56,6 +56,12 @@
     "typescript/log.ts",
     "typescript/tabs.ts",
 
+
+    "typescript/album_desc.ts",
+    "typescript/layout_data.ts",
+    "typescript/page_entry.ts",
+    "typescript/page_layout.ts",
+
     "typescript/album.ts",
     "typescript/album_image.ts",
     "typescript/album_page.ts",
