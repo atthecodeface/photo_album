@@ -47,7 +47,7 @@ class PhotoAlbum implements AlbumGui {
 
   album_add_json(json: any):void {
     try {
-      this.album.of_json(json);
+      this.album.of_desc(this, json);
       this.album_set_default_page();
     }
     catch (e) {
@@ -88,7 +88,7 @@ class PhotoAlbum implements AlbumGui {
     const page = this.album.get_page(page_tag);
     this.pages.push(page_tag);
     if (page !== null) {
-      page.mk_body(this, this.album_div);
+      page.mk_body(this.album_div);
     }
   }
 }

@@ -2,6 +2,7 @@ import { AlbumImage, AlbumImageDesc } from "./album_image.js";
 import { AlbumPage, AlbumPageDesc } from "./album_page.js";
 
 export interface AlbumGui {
+  album: Album;
   album_set_page(tag: string): void;
 }
 
@@ -23,7 +24,7 @@ export class Album {
     this.default_page = "";
   }
 
-  of_json(desc: AlbumDesc) {
+  of_desc(album_gui:AlbumGui, desc: AlbumDesc) {
     if (desc.default_page !== undefined) {
       this.default_page = desc.default_page;
     }
@@ -32,13 +33,13 @@ export class Album {
     }
     if (desc.images !== undefined) {
       for (const id of desc.images) {
-        const image = AlbumImage.of_json(this, id);
+        const image = AlbumImage.of_desc(this, id);
         this.entries.set(image.tag(), image);
       }
     }
     if (desc.pages !== undefined) {
       for (const pd of desc.pages) {
-        const page = AlbumPage.of_json(this, pd);
+        const page = AlbumPage.of_desc(album_gui, pd);
         this.entries.set(page.tag(), page);
       }
     }
@@ -46,29 +47,6 @@ export class Album {
 
   img_filename(filename: string) {
     return this.img_rel_dir + filename;
-  }
-
-  add_image(
-    tag: string,
-    filename: string,
-    caption: string,
-    width_px: number,
-    height_px: number,
-    hi_res: string | null = null,
-  ) {
-    let hi_res_img: AlbumImage | null = null;
-    if (hi_res !== null) {
-      hi_res_img = this.get_image(hi_res);
-    }
-    const image = new AlbumImage(
-      tag,
-      filename,
-      caption,
-      width_px,
-      height_px,
-      hi_res_img,
-    );
-    this.entries.set(tag, image);
   }
 
   get_image(tag: string): AlbumImage | null {
