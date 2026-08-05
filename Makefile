@@ -29,6 +29,10 @@ help:
 	@echo
 	@echo "    make upgrade_from_js_lib"
 
+old:
+	cargo run --release -- -P ~/Photos/GSM\ Tour\ 2026/Curated -f temp.yaml scale_images
+	cargo run --release -- -P ~/Photos/GSM\ Tour\ 2026/Curated -f temp.yaml web
+
 .PHONY: install_tsc
 install_tsc:
 	npm install typescript
