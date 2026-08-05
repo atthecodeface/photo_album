@@ -37,5 +37,6 @@ pub(crate) use indexed::Idx;
 pub mod album;
 // pub mod dom;
 pub mod desc;
+pub mod web_album;
 
 pub use album::{Album, Image, Page, Style};

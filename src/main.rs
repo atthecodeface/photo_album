@@ -1,5 +1,7 @@
-use photo_album::PathSet;
+use std::ptr::write;
+
 use photo_album::{self, Album};
+use photo_album::{PathSet, web_album::AlbumDesc};
 
 use serde_yaml;
 
@@ -13,6 +15,8 @@ pub struct PhotoAlbumCommand {
     file_path_set: PathSet,
 
     read_filename: Option<String>,
+    write_filename: Option<String>,
+    album: Album,
 
     // Positional string / f64 / usize arguments
     arg_strings: Vec<String>,
@@ -64,6 +68,9 @@ impl PhotoAlbumCommand {
     pub fn read_filename(&self) -> Option<&str> {
         self.read_filename.as_deref()
     }
+    pub fn write_filename(&self) -> Option<&str> {
+        self.write_filename.as_deref()
+    }
 
     const ARG_VERBOSE: ArgDescriptor<PhotoAlbumCommand> = ArgDescriptor::arg_flag(
         "verbose",
@@ -89,10 +96,22 @@ impl PhotoAlbumCommand {
         "album_desc_file",
         Some('f'),
         "Album descriptor filename",
-        ArgCount::Required,
+        ArgCount::Optional,
         None,
         &|cmd: &mut PhotoAlbumCommand, filename| {
             cmd.read_filename = Some(filename.to_owned());
+            Ok(())
+        },
+    );
+
+    const ARG_WRITE_FILENAME: ArgDescriptor<PhotoAlbumCommand> = ArgDescriptor::arg_string(
+        "write_desc_file",
+        Some('w'),
+        "Album descriptor output filename",
+        ArgCount::Optional,
+        None,
+        &|cmd: &mut PhotoAlbumCommand, filename| {
+            cmd.write_filename = Some(filename.to_owned());
             Ok(())
         },
     );
@@ -125,6 +144,12 @@ impl PhotoAlbumCommand {
         .handler(&Self::scale_images)
         .cmds(&[]);
 
+    const WEB_CMD: CmdDescriptor<Self> = CmdDescriptor::new("web")
+        .about("web JSON creation")
+        .args(&[Self::ARG_WRITE_FILENAME])
+        .handler(&Self::web)
+        .cmds(&[]);
+
     const BASE_CMD: CmdDescriptor<Self> = CmdDescriptor::new("photo_album")
         .about("Photo album creator")
         .version("0.1.0")
@@ -136,22 +161,22 @@ impl PhotoAlbumCommand {
             Self::ARG_READ_FILENAME,
         ])
         .handler(&Self::main)
-        .cmds(&[Self::SCALE_IMAGES_CMD]);
+        .cmds(&[Self::SCALE_IMAGES_CMD, Self::WEB_CMD]);
 
-    fn read_album(&self) -> PACResult<Album> {
+    fn read_album(&mut self) -> PACResult<()> {
         let Some(f) = self.read_filename() else {
-            return Err("Album descriptor filename not supplied".into());
+            return Ok(());
         };
         let r = std::fs::File::open(f)?;
         let desc = serde_yaml::from_reader::<_, photo_album::desc::AlbumDesc>(r)?;
-        let mut album = desc.to_album(&self.file_path_set)?;
-        album.derive_data()?;
-        Ok(album)
+        self.album = desc.to_album(&self.file_path_set)?;
+        self.album.derive_data()?;
+        Ok(())
     }
 
     pub fn scale_images(&mut self) -> PACCmdResult {
-        let album = self.read_album()?;
-        for img in album.images() {
+        self.read_album()?;
+        for img in self.album.images() {
             let rgb_image = img.read_img()?;
             for img_data in img.image_data() {
                 let Some(path) = img_data.image_file() else {
@@ -180,6 +205,17 @@ impl PhotoAlbumCommand {
             }
         }
         Self::cmd_ok()
+    }
+
+    pub fn web(&mut self) -> PACCmdResult {
+        self.read_album()?;
+        let web_album = AlbumDesc::of_album(&self.album);
+        if let Some(write_filename) = self.write_filename() {
+            use std::io::Write;
+            let mut f = std::fs::File::create(write_filename)?;
+            writeln!(f, "{}", web_album.to_json(self.pretty_json())?)?;
+        }
+        Ok(json::to_value(web_album)?)
     }
 
     pub fn main(&mut self) -> PACCmdResult {

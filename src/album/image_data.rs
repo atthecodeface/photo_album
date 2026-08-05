@@ -22,9 +22,9 @@ pub struct ImageData {
 }
 
 impl ImageData {
-    pub fn of_img(img: &RgbImage) -> Self {
-        let w = img.width();
-        let h = img.height();
+    pub fn of_img((width, height): (u32, u32)) -> Self {
+        let w = width;
+        let h = height;
         Self {
             w,
             h,

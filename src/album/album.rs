@@ -21,15 +21,6 @@ impl OutputMap for PathBuf {
     }
 }
 
-impl OutputMap for () {
-    fn img_path(&self, image_src: &Path, lod: Lod) -> Result<PathBuf, Error> {
-        let path: PathBuf = "output".into();
-        let image_src = lod.image_path(image_src)?;
-        // Drop the directories
-        Ok(path.join(image_src.file_name().unwrap()))
-    }
-}
-
 /// Create the Album
 ///
 /// Set the output map
@@ -63,7 +54,7 @@ impl std::default::Default for Album {
             images: VecWithIndex::default(),
             pages: VecWithIndex::default(),
             lod: vec![],
-            output_map: Box::new(()),
+            output_map: Box::new(PathBuf::new().join("output")),
         }
     }
 }
@@ -145,8 +136,10 @@ impl Album {
     }
 
     pub fn derive_data(&mut self) -> Result<(), Error> {
+        eprintln!("Deriving data...");
         let images = &mut self.images;
         let output_map = &self.output_map;
+        eprintln!("Creating lod for images...");
         for image in images.iter_mut() {
             for lod in self.lod.iter().copied() {
                 if !image.add_lod(lod) {
@@ -154,7 +147,9 @@ impl Album {
                 }
             }
         }
+        eprintln!("Loading image data for specifc LODs...");
         for image in images.iter_mut() {
+            // eprintln!("   ... {}", image.src().display());
             let image_src = image.src().to_owned();
             for image_data in image.image_data_mut().iter_mut() {
                 let lod = image_data.lod();
@@ -167,6 +162,18 @@ impl Album {
 
     pub fn images<'iter>(&'iter self) -> std::slice::Iter<'iter, Image> {
         self.images.iter()
+    }
+
+    pub fn image_tags<'iter>(&'iter self) -> impl Iterator<Item = &String> {
+        self.images.keys()
+    }
+
+    pub fn pages<'iter>(&'iter self) -> std::slice::Iter<'iter, Page> {
+        self.pages.iter()
+    }
+
+    pub fn page_tags<'iter>(&'iter self) -> impl Iterator<Item = &String> {
+        self.pages.keys()
     }
 
     pub fn make_page_indexes(&self) {

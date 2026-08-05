@@ -25,6 +25,9 @@ impl PagePage {
     pub fn set_style(&mut self, style: Style) {
         self.style = style;
     }
+    pub fn style(&self) -> &Style {
+        &self.style
+    }
     pub fn caption(&self) -> &str {
         &self.caption
     }
@@ -55,6 +58,9 @@ impl PageImage {
     }
     pub fn set_style(&mut self, style: Style) {
         self.style = style;
+    }
+    pub fn style(&self) -> &Style {
+        &self.style
     }
     pub fn image(&self) -> ImageIndex {
         self.image
@@ -88,6 +94,9 @@ impl Page {
     pub fn set_style(&mut self, style: Style) {
         self.style = style;
     }
+    pub fn style(&self) -> &Style {
+        &self.style
+    }
     pub fn add_image(&mut self, _album: &mut Album, img: PageImage) -> Result<(), Error> {
         self.images.push(img);
         Ok(())
@@ -101,6 +110,12 @@ impl Page {
     }
     pub fn title(&self) -> &str {
         &self.title
+    }
+    pub fn pages(&self) -> &[PagePage] {
+        &self.pages
+    }
+    pub fn images(&self) -> &[PageImage] {
+        &self.images
     }
     pub fn make_page_index(&self, _album: &Album) {}
 }

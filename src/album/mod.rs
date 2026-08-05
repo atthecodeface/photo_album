@@ -66,6 +66,11 @@ impl Lod {
     pub fn unscaled() -> Self {
         Self(0)
     }
+
+    pub fn as_usize(self) -> usize {
+        self.0
+    }
+
     pub fn of_f32(lod: f32) -> Result<Self, Error> {
         let lod = (lod * 1_000_000.0) as usize;
         if lod < 10_000 || lod > 100_000_000 {
@@ -78,6 +83,7 @@ impl Lod {
     pub fn is_unscaled(self) -> bool {
         self.0 == 0
     }
+
     pub fn lod_wh(self, w: u32, h: u32) -> Option<(u32, u32)> {
         let w = w as f64;
         let h = h as f64;
@@ -103,6 +109,7 @@ impl Lod {
             Some((scaled_w as u32, scaled_h as u32))
         }
     }
+
     pub fn image_path(self, image_src: &Path) -> Result<PathBuf, Error> {
         if self.is_unscaled() {
             Ok(image_src.into())

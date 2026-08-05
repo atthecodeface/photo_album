@@ -30,6 +30,11 @@ impl Image {
         let img = img.decode()?.into_rgb8();
         Ok(img)
     }
+    pub fn read_img_dims(&self) -> Result<(u32, u32), Error> {
+        let img = ImageReader::open(&self.src)?;
+        let dims = img.into_dimensions()?;
+        Ok(dims)
+    }
     pub fn set_name<I: Into<String>>(&mut self, name: I) {
         self.name = name.into();
     }
@@ -39,8 +44,8 @@ impl Image {
     pub fn set_src(&mut self, album: &mut Album, path: &str) -> Result<(), Error> {
         let p = album.find_image_path(path)?;
         self.src = p.canonicalize()?;
-        let img = self.read_img()?;
-        self.image_data = vec![ImageData::of_img(&img)];
+        let dims = self.read_img_dims()?;
+        self.image_data = vec![ImageData::of_img(dims)];
         Ok(())
     }
     pub fn src(&self) -> &Path {

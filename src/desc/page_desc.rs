@@ -36,7 +36,7 @@ impl PageImageDesc {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PagePageDesc {
     /// PageDesc name that this links to
-    name: String,
+    page: String,
     /// Caption to override with if any
     #[serde(default)]
     caption: String,
@@ -50,7 +50,7 @@ pub struct PagePageDesc {
 impl PagePageDesc {
     pub fn to_page_page(self, album: &mut Album) -> Result<PagePage, Error> {
         let mut s = PagePage::default();
-        s.set_page(album.find_page_index(&self.name)?);
+        s.set_page(album.find_page_index(&self.page)?);
         s.set_caption(self.caption);
         s.set_image(album.find_image_index(&self.image)?);
         s.set_style(self.style.to_style()?);
