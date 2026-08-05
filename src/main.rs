@@ -183,6 +183,7 @@ impl PhotoAlbumCommand {
                     continue;
                 };
                 let lod = img_data.lod();
+                eprintln!("HERE {}", path.display());
                 if path.exists() {
                     continue;
                 }

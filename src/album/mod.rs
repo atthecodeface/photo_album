@@ -7,8 +7,10 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum Error {
-    #[error("io error {0}")]
-    Io(#[from] std::io::Error),
+    #[error("cannot find file {0}")]
+    CannotFindFile(PathBuf),
+    #[error("failed to open file {0}: {1}")]
+    FailedToOpenImage(String, std::io::Error),
     #[error("image handling failed {0}")]
     Image(#[from] ::image::ImageError),
     #[error("cannot create output image path from {0}")]
@@ -25,6 +27,13 @@ pub enum Error {
     PathSet(#[from] crate::path_set::Error),
     #[error("level of detail must indicate 10k to 100Mpix (got {0})")]
     LevelOfDetailRange(usize),
+}
+
+impl std::convert::From<(&std::path::Path, std::io::Error)> for Error {
+    fn from(value: (&std::path::Path, std::io::Error)) -> Self {
+        let pathname = value.0.as_os_str().to_string_lossy().into();
+        Self::FailedToOpenImage(pathname, value.1)
+    }
 }
 
 /// A level of detail - 0 means native

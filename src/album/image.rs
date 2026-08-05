@@ -26,12 +26,12 @@ pub struct Image {
 
 impl Image {
     pub fn read_img(&self) -> Result<RgbImage, Error> {
-        let img = ImageReader::open(&self.src)?;
+        let img = ImageReader::open(&self.src).map_err(|e| Error::from((self.src.as_path(), e)))?;
         let img = img.decode()?.into_rgb8();
         Ok(img)
     }
     pub fn read_img_dims(&self) -> Result<(u32, u32), Error> {
-        let img = ImageReader::open(&self.src)?;
+        let img = ImageReader::open(&self.src).map_err(|e| Error::from((self.src.as_path(), e)))?;
         let dims = img.into_dimensions()?;
         Ok(dims)
     }
@@ -43,7 +43,9 @@ impl Image {
     }
     pub fn set_src(&mut self, album: &mut Album, path: &str) -> Result<(), Error> {
         let p = album.find_image_path(path)?;
-        self.src = p.canonicalize()?;
+        self.src = p
+            .canonicalize()
+            .map_err(|_| Error::CannotFindFile(p.clone()))?;
         let dims = self.read_img_dims()?;
         self.image_data = vec![ImageData::of_img(dims)];
         Ok(())
