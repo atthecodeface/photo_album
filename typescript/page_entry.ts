@@ -29,7 +29,7 @@ export class Entry {
       lod = desc.lod;
     }
     const layout = new LayoutData(desc);
-    if (desc.page !== undefined) {
+    if (desc.page !== undefined && desc.page !== null) {
       const page = album_gui.album.get_page(desc.page);
       if (page === null) {
         throw new Error(`Failed to find page ${desc.page} in album`);
@@ -112,7 +112,7 @@ export class EntryPage extends Entry {
     if (img_lod !== null) {
       const a = page.create_a_set_page(div, this.page);
       this.style.ele_style_attr(a, ["color"]);
-      page.create_img_link(a, img_lod, this.layout.w);
+      page.create_img_tag(a, img_lod, this.layout.w);
     }
     if (this.page.title !== null) {
       div.add_ele("p");

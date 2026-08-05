@@ -22,5 +22,11 @@ export class LayoutData {
     this.h = h;
     this.num_cols = num_cols;
     this.num_rows = num_rows;
+    if (this.num_cols == 0) {
+      this.num_cols = 1;
+    }
+    if (this.num_rows == 0) {
+      this.num_rows = 1;
+    }
   }
 }

@@ -82,7 +82,8 @@ export class AlbumPage {
     image: AlbumImage,
     img_lod: AlbumImageLod,
   ): HtmlElement | null{
-    if (image.caption()!="") {
+    if (image.caption() != "") {
+      parent.add_ele("p");
       const href_filename = this.album_gui.album.img_filename(img_lod.filename);
       const a = parent.add_ele("a", {}, [["href", href_filename]]);
       this.style.ele_style_attr(a, ["color"]);
@@ -100,7 +101,7 @@ export class AlbumPage {
     const album_gui = this.album_gui;
     const href = "#select_this_page" + page.tag();
     const a = parent.add_ele("a", {}, [["href", href]]);
-    const this_tag = this._tag;
+    const this_tag = page._tag;
     a.ele.addEventListener("click", (_e) => album_gui.album_set_page(this_tag));
     return a;
   }

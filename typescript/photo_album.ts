@@ -39,7 +39,9 @@ class PhotoAlbum implements AlbumGui {
     this.tabs.add_action("Top", this.album_set_default_page.bind(this));
     this.tabs.select("album");
 
-    this.fetch_json("/photo_album/typescript/example_album.json")
+    // const uri = "/photo_album/typescript/example_album.json";
+    const uri = "/photo_album/a.json";
+    this.fetch_json(uri)
       .then(
         this.album_add_json.bind(this)
       );
