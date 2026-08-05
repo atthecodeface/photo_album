@@ -2,12 +2,12 @@ export class Application {
   // An init fn returns a Promise<T>; when that completes the T is pushed onto the init_io
   application_wasm_init_fns: (() => Promise<any>)[];
   application_wasm_init_io: any[];
-  application_search_params: URLSearchParams;
+  application_location: Location;
 
   constructor(wasm_init_fns: (() => Promise<any>)[]) {
     this.application_wasm_init_fns = wasm_init_fns;
     this.application_wasm_init_io = [];
-    this.application_search_params = new URLSearchParams(window.location.search);
+    this.application_location = window.location;
     window.addEventListener("load", this.application_wasm_init_next.bind(this));
   }
 

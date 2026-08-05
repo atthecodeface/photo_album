@@ -71,9 +71,9 @@ export class EntryImage extends Entry {
     page: AlbumPage,
     div: HtmlElement,
   ) {
-    const img_lod = this.img.get_lod(this.lod, this.layout.w);
+    const img_lod = this.img.get_width(this.layout.w);
     if (img_lod !== null) {
-      page.create_img_link(div, img_lod, this.layout.w);
+      page.create_img_link(div, this.img, img_lod, this.layout.w);
       page.create_img_caption(div, this.img, img_lod);
     }
   }
@@ -100,7 +100,7 @@ export class EntryPage extends Entry {
     page: AlbumPage,
     div: HtmlElement,
   ) {
-    const img_lod = this.img.get_lod(this.lod, this.layout.w);
+    const img_lod = this.img.get_width(this.layout.w);
     this.style.ele_style_attr(div, [
       "color",
       "background",
@@ -112,7 +112,7 @@ export class EntryPage extends Entry {
     if (img_lod !== null) {
       const a = page.create_a_set_page(div, this.page);
       this.style.ele_style_attr(a, ["color"]);
-      page.create_img_tag(a, img_lod, this.layout.w);
+      this.img.create_img_tag(a, img_lod, this.layout.w);
     }
     if (this.page.title !== null) {
       div.add_ele("p");

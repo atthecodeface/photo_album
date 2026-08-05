@@ -66,6 +66,8 @@
     "typescript/album_image.ts",
     "typescript/album_page.ts",
     "typescript/album_style.ts",
+    "typescript/album_tab.ts",
+    "typescript/thumbnails_tab.ts",
     "typescript/photo_album.ts",
 
   ],

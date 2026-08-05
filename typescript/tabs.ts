@@ -181,9 +181,9 @@ export class Tabs<T> {
   add_action(
     label: string | HtmlElement,
     callback: () => void,
+    href: string,
   ) {
     this.actions.push(new Action(label, callback));
-    const href = "#";
     const li = this.ul.add_ele("li", {classes: "right"});
     const a = li.add_ele("a", {}, [["href", href]]);
     a.add_content(label);

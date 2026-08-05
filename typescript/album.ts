@@ -1,10 +1,10 @@
-import { AlbumDesc  } from "./album_desc.js";
+import { AlbumDesc } from "./album_desc.js";
 import { AlbumImage } from "./album_image.js";
 import { AlbumPage } from "./album_page.js";
 
 export interface AlbumGui {
   album: Album;
-  album_set_page(tag: string): void;
+  album_set_select(select: string): void;
 }
 
 export class Album {
@@ -18,7 +18,7 @@ export class Album {
     this.default_page = "";
   }
 
-  of_desc(album_gui:AlbumGui, desc: AlbumDesc) {
+  of_desc(album_gui: AlbumGui, desc: AlbumDesc) {
     if (desc.default_page !== undefined) {
       this.default_page = desc.default_page;
     }
@@ -38,9 +38,21 @@ export class Album {
       }
     }
   }
-
+  min_img_lod(): number { return 1_000_000; }
   img_filename(filename: string) {
     return this.img_rel_dir + filename;
+  }
+
+  image_tags(): string[] {
+    let images = [];
+    for (const e of this.entries.entries()) {
+      const tag = e[0]!;
+      const entry = e[1]!;
+      if (entry instanceof AlbumImage) {
+        images.push(tag);
+      }
+    }
+    return images;
   }
 
   get_image(tag: string): AlbumImage | null {

@@ -54,26 +54,15 @@ export class AlbumPage {
     return this._tag;
   }
 
-  create_img_tag(
-    parent: HtmlElement,
-    img_lod: AlbumImageLod,
-    width: number,
-  ): HtmlElement {
-     const e = parent.add_ele("img", {}, [
-        ["src", this.album_gui.album.img_filename(img_lod.filename)],
-      ]);
-    e.set_styles([["width", `${width}px`]]);
-    return e;
-  }
-
   create_img_link(
     parent: HtmlElement,
+    image: AlbumImage,
     img_lod: AlbumImageLod,
     width: number,
   ): HtmlElement {
-    const href_filename = this.album_gui.album.img_filename(img_lod.filename);
-    const a = parent.add_ele("a", {}, [["href", href_filename]]);
-    this.create_img_tag(a, img_lod, width);
+    const href = image.get_href(img_lod);
+    const a = parent.add_ele("a", {}, [["href", href]]);
+    image.create_img_tag(a, img_lod, width);
     return a;
   }
 
@@ -84,8 +73,9 @@ export class AlbumPage {
   ): HtmlElement | null{
     if (image.caption() != "") {
       parent.add_ele("p");
-      const href_filename = this.album_gui.album.img_filename(img_lod.filename);
-      const a = parent.add_ele("a", {}, [["href", href_filename]]);
+      const href = image.get_href(img_lod);
+      // const href_filename = this.album_gui.album.img_filename(img_lod.filename);
+      const a = parent.add_ele("a", {}, [["href", href]]);
       this.style.ele_style_attr(a, ["color"]);
       a.add_content(image.caption());
       return a;
@@ -99,15 +89,14 @@ export class AlbumPage {
     page: AlbumPage,
   ): HtmlElement {
     const album_gui = this.album_gui;
-    const href = "#select_this_page" + page.tag();
+    const select = "page=" + page.tag();
+    const href = "#album?" + select;
     const a = parent.add_ele("a", {}, [["href", href]]);
-    const this_tag = page._tag;
-    a.ele.addEventListener("click", (_e) => album_gui.album_set_page(this_tag));
+    a.ele.addEventListener("click", (_e) => album_gui.album_set_select(select));
     return a;
   }
 
   mk_body(html: HtmlElement) {
-    html.clear();
     this.style.ele_style_attr(html, [
       "color",
       "background",
