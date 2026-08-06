@@ -6,7 +6,7 @@ use super::Error;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ImageDesc {
-    /// Name of the page description, unique within the site
+    /// Name of the image description, unique within the site
     name: String,
     /// Image source file
     src: String,

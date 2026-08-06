@@ -8,9 +8,9 @@ use super::Error;
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct StyleDesc {
     #[serde(default)]
-    bg: String,
+    x: u32,
     #[serde(default)]
-    color: String,
+    y: u32,
     #[serde(default)]
     width: u32,
     #[serde(default)]
@@ -21,44 +21,33 @@ pub struct StyleDesc {
     num_cols: usize,
     #[serde(default)]
     lod: usize,
-    // FIXME
     #[serde(default)]
-    rc: (u32, u32),
+    pad: Option<usize>,
     #[serde(default)]
-    pad: usize,
+    bg: Option<String>,
     #[serde(default)]
-    border: usize,
+    color: Option<String>,
     #[serde(default)]
-    margin: usize,
+    border: Option<String>,
+    #[serde(default)]
+    font: Option<String>,
 }
 
 impl StyleDesc {
     pub fn to_style(self) -> Result<Style, Error> {
-        let mut s = Style::default();
-        s.x = self.rc.0;
-        s.y = self.rc.1;
-        s.bg = self.bg;
-        s.color = self.color;
-        s.width = self.width;
-        s.height = self.height;
-        s.lod = self.lod;
-        s.num_rows = self.num_rows;
-        s.num_cols = self.num_cols;
+        let s = Style::default()
+            .with_x(self.x)
+            .with_y(self.y)
+            .with_width(self.width)
+            .with_height(self.height)
+            .with_num_cols(self.num_cols)
+            .with_num_rows(self.num_rows)
+            .with_lod(self.lod)
+            .with_pad(self.pad)
+            .with_bg(self.bg)
+            .with_color(self.color)
+            .with_border(self.border)
+            .with_font(self.font);
         Ok(s)
-    }
-
-    pub fn w_px(&self, aspect_ratio: f32) -> u32 {
-        if self.width > 0 {
-            self.width
-        } else {
-            (self.height as f32 * aspect_ratio) as u32
-        }
-    }
-    pub fn h_px(&self, aspect_ratio: f32) -> u32 {
-        if self.height > 0 {
-            self.height
-        } else {
-            (self.width as f32 / aspect_ratio) as u32
-        }
     }
 }

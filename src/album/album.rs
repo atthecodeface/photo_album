@@ -2,11 +2,12 @@ use std::path::Path;
 use std::path::PathBuf;
 use std::str::FromStr;
 
-use super::{Error, Image, Lod, Page};
+use super::{Error, Image, Lod, Map, Page};
 use crate::PathSet;
 use crate::indexed::VecWithIndex;
 
 crate::make_index!(ImageIndex, usize, true);
+crate::make_index!(MapIndex, usize, true);
 crate::make_index!(PageIndex, usize, true);
 
 pub trait OutputMap: std::fmt::Debug {
@@ -36,6 +37,8 @@ pub struct Album {
     image_srcs: Vec<PathBuf>,
     /// Images in the album, indexed by image name
     images: VecWithIndex<'static, String, ImageIndex, Image, true>,
+    /// Images in the album, indexed by image name
+    maps: VecWithIndex<'static, String, MapIndex, Map, true>,
     /// Pages in the album, indexed by page name
     pages: VecWithIndex<'static, String, PageIndex, Page, true>,
     /// Levels of detail required for the images
@@ -52,6 +55,7 @@ impl std::default::Default for Album {
             path_set: PathSet::default(),
             image_srcs: vec![],
             images: VecWithIndex::default(),
+            maps: VecWithIndex::default(),
             pages: VecWithIndex::default(),
             lod: vec![],
             output_map: Box::new(PathBuf::new().join("output")),
@@ -96,6 +100,14 @@ impl Album {
             .map_err(|_e| Error::AlbumAlreadyContainsImage {
                 image_name: err_name,
             })
+    }
+
+    pub fn add_map(&mut self, map: Map) -> Result<MapIndex, Error> {
+        let name = map.name().to_owned();
+        let err_name = name.clone();
+        self.maps
+            .insert(name, |_| map)
+            .map_err(|_e| Error::AlbumAlreadyContainsMap { map_name: err_name })
     }
 
     pub fn add_page(&mut self, page: Page) -> Result<PageIndex, Error> {
@@ -166,6 +178,14 @@ impl Album {
 
     pub fn image_tags<'iter>(&'iter self) -> impl Iterator<Item = &String> {
         self.images.keys()
+    }
+
+    pub fn maps<'iter>(&'iter self) -> std::slice::Iter<'iter, Map> {
+        self.maps.iter()
+    }
+
+    pub fn map_tags<'iter>(&'iter self) -> impl Iterator<Item = &String> {
+        self.maps.keys()
     }
 
     pub fn pages<'iter>(&'iter self) -> std::slice::Iter<'iter, Page> {

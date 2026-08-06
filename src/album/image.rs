@@ -18,10 +18,14 @@ pub struct Image {
     ///
     /// So native is at [0]; then thumbnail to largest
     image_data: Vec<ImageData>,
+    /// Timestamp (seconds since epoch) of image
+    timestamp: u64,
     /// Latitude
     lat: f64,
     /// Longitude
     lon: f64,
+    /// Direction of photo (possibly)
+    dir: f32,
 }
 
 impl Image {
@@ -61,6 +65,18 @@ impl Image {
     }
     pub fn height(&self) -> u32 {
         self.image_data[0].height()
+    }
+    pub fn timestamp(&self) -> u64 {
+        self.timestamp
+    }
+    pub fn lat(&self) -> f64 {
+        self.lat
+    }
+    pub fn lon(&self) -> f64 {
+        self.lon
+    }
+    pub fn direction(&self) -> f32 {
+        self.dir
     }
     pub fn name(&self) -> &str {
         &self.name

@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use super::Error;
-use super::{ImageDesc, PageDesc};
+use super::{ImageDesc, MapDesc, PageDesc};
 use crate::{Album, PathSet};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -12,6 +12,9 @@ pub struct AlbumDesc {
     /// Image descriptors
     #[serde(default)]
     images: Vec<ImageDesc>,
+    /// Map descriptors
+    #[serde(default)]
+    maps: Vec<MapDesc>,
     /// Page descriptors
     #[serde(default)]
     pages: Vec<PageDesc>,
@@ -39,6 +42,10 @@ impl AlbumDesc {
         for i in self.images {
             let i = i.to_image(&mut album)?;
             album.add_image(i)?;
+        }
+        for m in self.maps {
+            let m = m.to_map(&mut album)?;
+            album.add_map(m)?;
         }
         for p in self.pages {
             let p = p.to_page(&mut album)?;
