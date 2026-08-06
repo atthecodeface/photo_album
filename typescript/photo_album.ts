@@ -68,23 +68,29 @@ class PhotoAlbum implements AlbumGui {
         this.album_add_json.bind(this)
       );
   }
-  hash_changed(event:HashChangeEvent) {
+
+  hash_changed(event: HashChangeEvent) {
     const decode = this.decode_hash(event.newURL);
+    console.log("hash_changed:", decode[0], decode[1]);
     if (decode[0] !== "") {
       this.tabs.select(decode[0]);
     }
     this.album_tab.tab_set_search(decode[1]);
   }
 
-  decode_hash(hash: string): [string, string] {
+  decode_hash(hash: string | undefined): [string, string] {
     let tab_to_select = "album";
-    if (hash.startsWith("#")) {
-      tab_to_select = hash.slice(1).split("?")[0]!;
+    hash = hash!.split("#", 2)[1];
+    if (hash !== undefined) {
+      tab_to_select = hash.split("?")[0]!;
+    } else {
+      hash = "";
     }
     let search = hash.split("?", 2)[1];
     if (search === undefined) {
-      return [tab_to_select, ""];
+      search = "";
     }
+    console.log(hash, tab_to_select, search);
     return [tab_to_select, search];
   }
 
@@ -97,6 +103,9 @@ class PhotoAlbum implements AlbumGui {
     try {
       this.album.of_desc(this, json);
       this.album_tab.tab_set_search(this.view_selector);
+      const tab_name = this.tabs.selected_tab();
+      const tab = this.tabs.tab(tab_name)!;
+      this.tab_select(tab, tab_name);
     }
     catch (e) {
       alert(`Failed to read album json: ${e}`);
@@ -124,12 +133,9 @@ class PhotoAlbum implements AlbumGui {
   }
 
   album_set_select(select: string): void {
+    console.log("album_set_select:", select);
     this.album_tab.tab_set_search(select);
   }
-
-  album_set_previous_page() {
-  }
-
 
 }
 

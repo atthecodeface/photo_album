@@ -41,8 +41,6 @@ export class ThumbnailsTab implements Tab {
       }
       table.add_body(row);
     }
-    console.log(this.div);
-    console.log(table);
     table.as_html();
   }
 

@@ -1,4 +1,7 @@
-
+/** These should be kept in sync with the Rust web_album descriptors
+ *
+ *
+ */
 
 export interface AlbumImageDataDesc {
   filename?: string;
@@ -10,7 +13,18 @@ export interface AlbumImageDataDesc {
 export interface AlbumImageDesc {
   tag?: string;
   caption?: string;
+  timestamp?: number;
+  lat?: number;
+  lon?: number;
+  dir?: number;
   data?: AlbumImageDataDesc[];
+}
+
+export interface AlbumMapDesc {
+  tag?: string;
+  caption?: string;
+  image?: string;
+  corners?: number[];
 }
 
 /**

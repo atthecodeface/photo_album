@@ -104,7 +104,7 @@ export class Tabs<T> {
   /**
    * The currently selected tab number
    */
-  selected_tab: Tab<T> | null;
+  _selected_tab: Tab<T> | null;
 
   /**
    * Create a new set of tabs whose tab list can be selected with 'container_select'
@@ -120,7 +120,7 @@ export class Tabs<T> {
   ) {
     this.tabs = [];
     this.callback = tab_select_callback;
-    this.selected_tab = null;
+    this._selected_tab = null;
     this.actions = [];
 
     if (div instanceof HtmlElement) {
@@ -171,9 +171,8 @@ export class Tabs<T> {
     a.add_content(label);
     const tab = new Tab(li, div, name, client);
     this.tabs.push(tab);
-    a.ele.addEventListener("click", (e: Event) => {
+    a.ele.addEventListener("click", (_e: Event) => {
       this.select_tab(tab);
-      e.preventDefault();
     });
     return div;
   }
@@ -187,9 +186,8 @@ export class Tabs<T> {
     const li = this.ul.add_ele("li", {classes: "right"});
     const a = li.add_ele("a", {}, [["href", href]]);
     a.add_content(label);
-    a.ele.addEventListener("click", (e: Event) => {
+    a.ele.addEventListener("click", (_e: Event) => {
       callback();
-      e.preventDefault();
     });
   }
 
@@ -200,6 +198,13 @@ export class Tabs<T> {
       }
     }
     return null;
+  }
+
+  selected_tab(): string {
+    if (this._selected_tab === null) {
+      throw new Error("No tab selected; bug in application");
+    }
+    return this._selected_tab!.div_name;
   }
 
   /** Select the tab of the given name 'name'
@@ -225,13 +230,13 @@ export class Tabs<T> {
   }
 
   private select_tab(tab: Tab<T>): string {
-    if (tab === this.selected_tab) {
+    if (tab === this._selected_tab) {
       return tab.div_name;
     }
     for (const t of this.tabs) {
       t.set_hidden(t !== tab);
     }
-    this.selected_tab = tab;
+    this._selected_tab = tab;
     this.callback(tab.client, tab.div_name);
     return tab.div_name;
   }

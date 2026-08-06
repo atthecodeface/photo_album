@@ -7,7 +7,7 @@ import { AlbumStyle } from "./album_style.js";
 import { AlbumEntryDesc } from "./album_desc.js";
 import { LayoutData } from "./layout_data.js";
 
-export class Entry {
+export class PageEntry {
   layout: LayoutData;
   style: AlbumStyle;
 
@@ -16,7 +16,7 @@ export class Entry {
     this.style = style;
   }
 
-  static of_desc(album_gui: AlbumGui, desc: AlbumEntryDesc): Entry {
+  static of_desc(album_gui: AlbumGui, desc: AlbumEntryDesc): PageEntry {
     if (desc.image === undefined) {
       throw new Error(`No image specified for page item entry`);
     }
@@ -53,7 +53,7 @@ export class Entry {
   fill_div(_page:AlbumPage, _div: HtmlElement): void {}
 }
 
-export class EntryImage extends Entry {
+export class EntryImage extends PageEntry {
   img: AlbumImage;
   lod: number;
   constructor(
@@ -79,7 +79,7 @@ export class EntryImage extends Entry {
   }
 }
 
-export class EntryPage extends Entry {
+export class EntryPage extends PageEntry {
   img: AlbumImage;
   lod: number;
   page: AlbumPage;
@@ -120,5 +120,26 @@ export class EntryPage extends Entry {
       this.style.ele_style_attr(a, ["color"]);
       a.add_content(this.page.title);
     }
+  }
+}
+
+export class EntryMap extends PageEntry {
+  img: AlbumImage;
+  constructor(
+    img: AlbumImage,
+    layout: LayoutData,
+    style: AlbumStyle = new AlbumStyle(),
+  ) {
+    super(layout, style);
+    this.img = img;
+  }
+
+  override fill_div(
+    _page: AlbumPage,
+    div: HtmlElement,
+  ) {
+    const img_lod = this.img.get_lod(0);
+    if (img_lod === null) { return; }
+    this.img.create_img_tag(div, img_lod, this.layout.w);
   }
 }

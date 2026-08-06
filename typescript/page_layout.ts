@@ -3,7 +3,7 @@ import { HtmlElement } from "./html.js";
 import { AlbumGui } from "./album.js";
 import { AlbumPage } from "./album_page.js";
 import { AlbumEntryDesc } from "./album_desc.js";
-import { Entry } from "./page_entry.js";
+import { PageEntry } from "./page_entry.js";
 
 export interface PageLayout {
   add_entry(album_gui: AlbumGui, entry_desc: AlbumEntryDesc): void;
@@ -15,7 +15,7 @@ export class PageLayoutTable implements PageLayout {
   num_rows: number = 0;
 
   // entries is a map from x+1000*y to the entry starting at (x,y)
-  entries: Map<number, Entry>;
+  entries: Map<number, PageEntry>;
   rows_cols: Map<number, number[]>;
 
   constructor() {
@@ -24,7 +24,7 @@ export class PageLayoutTable implements PageLayout {
   }
 
   add_entry(album_gui: AlbumGui, entry_desc: AlbumEntryDesc) {
-    const entry = Entry.of_desc(album_gui, entry_desc);
+    const entry = PageEntry.of_desc(album_gui, entry_desc);
 
     const lx = entry.layout.x;
     const ty = entry.layout.y;
@@ -84,7 +84,7 @@ export class PageLayoutTable implements PageLayout {
 
 export class PageLayoutPlace implements PageLayout {
   bbox: [number, number, number, number];
-  entries: Entry[];
+  entries: PageEntry[];
 
   constructor() {
     this.entries = [];
@@ -92,7 +92,7 @@ export class PageLayoutPlace implements PageLayout {
   }
 
   add_entry(album_gui: AlbumGui, entry_desc: AlbumEntryDesc) {
-    const entry = Entry.of_desc(album_gui, entry_desc);
+    const entry = PageEntry.of_desc(album_gui, entry_desc);
 
     const x = entry.layout.x;
     const y = entry.layout.y;
