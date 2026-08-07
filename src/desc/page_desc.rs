@@ -65,6 +65,7 @@ pub struct PageDesc {
     /// Title for the page
     title: String,
     /// Layout type (grid, placed, or whatever the application supports)
+    #[serde(default)]
     layout: String,
     /// Page entries within the table on the page
     #[serde(default)]
