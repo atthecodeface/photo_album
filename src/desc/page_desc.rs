@@ -64,6 +64,8 @@ pub struct PageDesc {
     name: String,
     /// Title for the page
     title: String,
+    /// Layout type (grid, placed, or whatever the application supports)
+    layout: String,
     /// Page entries within the table on the page
     #[serde(default)]
     pages: Vec<PagePageDesc>,
@@ -80,6 +82,7 @@ impl PageDesc {
         let mut page = Page::default();
         page.set_name(self.name);
         page.set_title(self.title);
+        page.set_layout(self.layout);
         for i in self.images {
             let i = i.to_page_image(album)?;
             page.add_image(album, i)?;

@@ -15,7 +15,7 @@ impl AlbumPageDesc {
     pub fn of_page(album_desc: &AlbumDescBuilder, tag: &str, page: &Page) -> Self {
         let mut desc = Self::default();
         desc.tag = tag.to_owned();
-        desc.layout = "grid".to_owned();
+        desc.layout = page.layout().to_owned();
         desc.title = page.title().to_owned();
 
         for pp in page.pages() {

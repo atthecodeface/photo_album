@@ -76,6 +76,8 @@ pub struct Page {
     name: String,
     /// Title for the page
     title: String,
+    /// Layout
+    layout: String,
     /// Page entries within the table on the page
     pages: Vec<PagePage>,
     /// Image entries within the table on the page
@@ -90,6 +92,9 @@ impl Page {
     }
     pub fn set_title<I: Into<String>>(&mut self, title: I) {
         self.title = title.into();
+    }
+    pub fn set_layout<I: Into<String>>(&mut self, layout: I) {
+        self.layout = layout.into();
     }
     pub fn set_style(&mut self, style: Style) {
         self.style = style;
@@ -118,4 +123,7 @@ impl Page {
         &self.images
     }
     pub fn make_page_index(&self, _album: &Album) {}
+    pub fn layout(&self) -> &str {
+        &self.layout
+    }
 }
