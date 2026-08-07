@@ -17,7 +17,7 @@ export class ThumbnailsTab implements Tab {
 
     const table = this.div.add_table();
     const image_tags = this.album.image_tags();
-    image_tags.sort();
+    image_tags.sort((a, b) => a.localeCompare(b));
     let n = image_tags.length;
     let nc = 8;
     if (n < 8) {
@@ -28,7 +28,7 @@ export class ThumbnailsTab implements Tab {
     for (let y = 0; y < nr; y++) {
       const row = [];
       for (let x = 0; x < nc; x++) {
-        let i = x * nc + y;
+        let i = x + y * nc;
         const tag = image_tags[i];
         if (tag !== undefined) {
           const img = this.album.get_image(tag)!;

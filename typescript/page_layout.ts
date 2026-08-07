@@ -118,14 +118,14 @@ export class PageLayoutPlace implements PageLayout {
     for (const e of this.entries) {
       const lx = e.layout.x - e.layout.w / 2 - dx;
       const ty = e.layout.y - e.layout.h / 2 - dy;
-      const rx = lx + e.layout.w;
-      const by = ty + e.layout.h;
+      // const rx = lx + e.layout.w;
+      // const by = ty + e.layout.h;
       const styles: [string, string][] = [
         ["position", "absolute"],
         ["left", `${lx}px`],
-        ["right", `${rx}px`],
+        // ["right", `${rx}px`],
         ["top", `${ty}px`],
-        ["bottom", `${by}px`],
+        // ["bottom", `${by}px`],
       ];
       e.create_div(page, div, styles);
     }
