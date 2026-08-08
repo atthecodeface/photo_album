@@ -42,3 +42,7 @@ path = "../thunderclap"
 version = "0.25"
 default-features = false
 features = ["jpeg", "png"]
+
+[dependencies.geo-nd-wasm]
+version = "0.8"
+path = "../geo-nd-wasm"

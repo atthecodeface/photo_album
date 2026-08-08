@@ -1,5 +1,8 @@
 use thiserror::Error;
 
+mod wasm_lib;
+pub use wasm_lib::*;
+
 pub mod path_set;
 pub use path_set::PathSet;
 
