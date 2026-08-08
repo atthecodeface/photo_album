@@ -55,7 +55,12 @@
     "typescript/animate.ts",
     "typescript/log.ts",
     "typescript/tabs.ts",
+    "typescript/web_gl.ts",
+    "typescript/web_gl_3d_obj.ts",
+    "typescript/web_gl_flat.ts",
+    "typescript/web_gl_pt_field.ts",
 
+    "typescript/webgl_canvas.ts",
 
     "typescript/album_desc.ts",
     "typescript/layout_data.ts",
@@ -67,6 +72,7 @@
     "typescript/album_page.ts",
     "typescript/album_style.ts",
     "typescript/album_tab.ts",
+    "typescript/panorama_tab.ts",
     "typescript/thumbnails_tab.ts",
     "typescript/photo_album.ts",
 

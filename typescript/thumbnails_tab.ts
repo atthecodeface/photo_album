@@ -4,8 +4,11 @@ import { Album } from "./album.js";
 import { Tab } from "./photo_album.js";
 
 export class ThumbnailsTab implements Tab {
+
   album: Album;
   div: HtmlElement;
+  tab_uses_floating_canvas: boolean = false;
+
   constructor(album: Album, div: HtmlElement) {
     this.album = album;
     this.div = div;

@@ -10,6 +10,7 @@ interface AlbumView {
 }
 export class AlbumViewPage implements AlbumView {
   page: AlbumPage | null = null;
+
   constructor() {}
   set_page(album: Album, page: string) {
     if (page == "") {
@@ -41,6 +42,8 @@ export class AlbumTab implements Tab {
   album: Album;
   contents: AlbumView;
   div: HtmlElement;
+  tab_uses_floating_canvas: boolean = false;
+
   constructor(album: Album, div: HtmlElement) {
     this.album = album;
     this.div = div;
