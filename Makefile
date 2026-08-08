@@ -1,3 +1,5 @@
+ROOT := "$(shell pwd)"
+
 WASM_PACK = wasm-pack build --dev --target web
 WASM_PACK = WASM_PACK_WASM_OPT=false wasm-pack build --release --target web
 WASM_PACK = WASM_PACK_WASM_OPT=true wasm-pack build --dev --target web
@@ -9,8 +11,16 @@ TS = ./typescript/
 
 .PHONY: all
 all:
-	${WASM_PACK} --out-dir ./http/wasm
+	(cd ${ROOT}/rust/photo-album-wasm && ${WASM_PACK} --out-dir ${ROOT}/http/wasm)
 	$(MAKE) js
+
+.PHONY: install_tsc
+install_tsc:
+	(cd ${ROOT}/web && npm install typescript)
+
+.PHONY: js
+js:
+	(cd ${ROOT}/web && npx tsc -b)
 
 start_http:
 	(cd .. && python3 -m http.server 3001)
@@ -33,9 +43,6 @@ old:
 	cargo run --release -- -P ~/Photos/GSM\ Tour\ 2026/Curated -f temp.yaml scale_images
 	cargo run --release -- -P ~/Photos/GSM\ Tour\ 2026/Curated -f temp.yaml web
 
-.PHONY: install_tsc
-install_tsc:
-	npm install typescript
 
 .PHONY: upgrade_from_js_lib
 upgrade_from_js_lib:
@@ -45,9 +52,6 @@ upgrade_from_js_lib:
 	cp ${JS_LIB}/typescript/html.ts ${TS}
 	cp ${JS_LIB}/typescript/log.ts ${TS}
 	cp ${JS_LIB}/typescript/tabs.ts ${TS}
-
-js:
-	npx tsc -b
 
 .PHONY: zip
 zip: album.zip

@@ -2,13 +2,9 @@
   // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
     "rootDir": "./typescript/",
-    "outDir": "./http/javascript/",
+    "outDir": "../http/javascript/",
 
     "target": "es2017",
-    // Not strictly needed
-    // "sourceMap": true,
-    // "declaration": true,
-    // "declarationMap": true,
 
     // Stricter Typechecking Options
     "noUncheckedIndexedAccess": true,
@@ -31,18 +27,8 @@
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
-    // Needed for testing in jest
-    // "module": "node16",
-    // Needed for testing in jest
-    // "moduleResolution": "node16",
     "types": [
-      // Enable 'jest' for testing
-      // "jest",
-      // Enable 'node' for use with some jest tests
-      // "node",
-      // "shaders",
     ],
-    // "typeRoots": ["./typescript/@types"],
   },
 
   // "include": ["pkg/*"],
