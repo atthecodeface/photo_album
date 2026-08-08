@@ -3,7 +3,7 @@ use std::path::Path;
 use serde::Serialize;
 
 use super::{AlbumImageDesc, AlbumMapDesc, AlbumPageDesc};
-use crate::album::{Album, Image, ImageData, Page, PageImage, PagePage};
+use photo_album_core::{Album, Image, ImageData, Page, PageImage, PagePage};
 
 #[derive(Debug, Default, Serialize)]
 pub struct AlbumDesc {
@@ -71,7 +71,7 @@ impl AlbumDesc {
         desc
     }
     /// Generate the json
-    pub fn to_json(&self, pretty: bool) -> crate::Result<String> {
+    pub fn to_json(&self, pretty: bool) -> photo_album_core::Result<String> {
         if pretty {
             Ok(serde_json::to_string_pretty(self)?)
         } else {

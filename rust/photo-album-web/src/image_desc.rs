@@ -2,7 +2,7 @@ use serde::Serialize;
 
 use super::AlbumDescBuilder;
 
-use crate::album::{Image, ImageData};
+use photo_album_core::{Image, ImageData};
 
 #[derive(Debug, Default, Serialize)]
 pub struct AlbumImageDataDesc {

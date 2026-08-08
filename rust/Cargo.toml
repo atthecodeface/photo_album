@@ -2,8 +2,9 @@
 resolver = "3"
 members = [
     "photo-album-core",
-#    "photo-album-wasm",
-    #"photo-album",
+    "photo-album-web",
+    "photo-album-wasm",
+    "photo-album",
 ]
 
 [workspace.package]
@@ -23,6 +24,7 @@ repository = "https://github.com/atthecodeface/photoalbum"
 
 [workspace.dependencies]
 photo-album-core = { version = "0.0.1", path = "./photo-album-core" }
+photo-album-web = { version = "0.0.1", path = "./photo-album-web" }
 
 [workspace.dependencies.num-traits]
 version = "0.2.19"

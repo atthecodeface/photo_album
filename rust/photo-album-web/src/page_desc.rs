@@ -1,7 +1,7 @@
 use serde::Serialize;
 
 use super::{AlbumDescBuilder, AlbumEntryDesc};
-use crate::album::Page;
+use photo_album_core::Page;
 
 #[derive(Debug, Default, Serialize)]
 pub struct AlbumPageDesc {

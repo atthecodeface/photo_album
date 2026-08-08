@@ -2,10 +2,7 @@ use serde::Serialize;
 
 use super::AlbumDescBuilder;
 
-use crate::{
-    Style,
-    album::{PageImage, PagePage},
-};
+use photo_album_core::{PageImage, PagePage, Style};
 
 #[derive(Debug, Serialize)]
 pub struct AlbumEntryDesc {

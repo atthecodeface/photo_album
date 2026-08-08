@@ -9,6 +9,8 @@ pub use path_set::PathSet;
 
 #[derive(Error, Debug)]
 pub enum Error {
+    #[error("image handling failed {0}")]
+    Image(#[from] ::image::ImageError),
     #[error("failed to parse json {0}")]
     Json(#[from] serde_json::Error),
     #[error("failed to parse yanl {0}")]
@@ -42,4 +44,4 @@ pub mod album;
 // pub mod dom;
 pub mod desc;
 
-pub use album::{Album, Image, Page, Style};
+pub use album::{Album, Image, ImageData, Map, Page, PageImage, PagePage, Style};

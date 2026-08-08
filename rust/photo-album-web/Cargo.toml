@@ -1,5 +1,5 @@
 [package]
-name = "photo-album-wasm"
+name = "photo-album-web"
 edition.workspace = true
 version.workspace = true
 description.workspace = true
@@ -12,6 +12,7 @@ repository.workspace = true
 
 [dependencies]
 thiserror.workspace = true
+# image.workspace = true
 serde.workspace = true
 serde_json.workspace = true
-geo-nd-wasm.workspace = true
+photo-album-core.workspace = true

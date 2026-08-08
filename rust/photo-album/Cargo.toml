@@ -12,8 +12,10 @@ repository.workspace = true
 
 [dependencies]
 anyhow.workspace = true
+image.workspace = true
 thiserror.workspace = true
 thunderclap.workspace = true
-photo-album.workspace = true
-
-[bin]
+photo-album-core.workspace = true
+photo-album-web.workspace = true
+serde_json.workspace = true
+serde_yaml.workspace = true

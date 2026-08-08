@@ -1,9 +1,9 @@
-use std::ptr::write;
+use photo_album_core::{Album, PathSet};
 
-use photo_album::{self, Album};
-use photo_album::{PathSet, web_album::AlbumDesc};
+use photo_album_core::desc as photo_album_desc;
+use photo_album_web as web_album_desc;
 
-use serde_yaml;
+// use serde_yaml;
 
 use thunderclap::{ArgCount, ArgDescriptor, CmdDescriptor, CommandArgs, json};
 
@@ -24,7 +24,7 @@ pub struct PhotoAlbumCommand {
     arg_usizes: Vec<usize>,
 }
 
-type Error = photo_album::Error;
+type Error = photo_album_core::Error;
 type PACResult<T> = std::result::Result<T, Error>;
 type PACCmdResult = PACResult<json::Value>;
 
@@ -168,7 +168,7 @@ impl PhotoAlbumCommand {
             return Ok(());
         };
         let r = std::fs::File::open(f)?;
-        let desc = serde_yaml::from_reader::<_, photo_album::desc::AlbumDesc>(r)?;
+        let desc = serde_yaml::from_reader::<_, photo_album_desc::AlbumDesc>(r)?;
         self.album = desc.to_album(&self.file_path_set)?;
         self.album.derive_data()?;
         Ok(())
@@ -199,7 +199,7 @@ impl PhotoAlbumCommand {
                         image::imageops::FilterType::CatmullRom,
                     );
                     resized_image.save(path).map_err(|e| {
-                        let e: photo_album::album::Error = e.into();
+                        let e: Error = e.into();
                         e
                     })?;
                 }
@@ -210,7 +210,7 @@ impl PhotoAlbumCommand {
 
     pub fn web(&mut self) -> PACCmdResult {
         self.read_album()?;
-        let web_album = AlbumDesc::of_album(&self.album);
+        let web_album = web_album_desc::AlbumDesc::of_album(&self.album);
         if let Some(write_filename) = self.write_filename() {
             use std::io::Write;
             let mut f = std::fs::File::create(write_filename)?;
