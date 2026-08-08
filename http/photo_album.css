@@ -88,7 +88,8 @@ The *floating-div* is at z-index -1 (behind) and occupies the whole window below
 */
 .floating-div {
     /* The outer div - force it to be the *whole* frame */
-    z-index: -1;
+    z-index: 3;
+    background-color: black;
     position: fixed;
     top: 40px;
     bottom: 0px;
