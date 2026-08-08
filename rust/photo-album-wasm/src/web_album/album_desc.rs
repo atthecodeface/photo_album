@@ -70,7 +70,7 @@ impl AlbumDesc {
         desc.img_rel_dir = img_rel_dir.into();
         desc
     }
-    /// Generate the json of the [CameraInstance]
+    /// Generate the json
     pub fn to_json(&self, pretty: bool) -> crate::Result<String> {
         if pretty {
             Ok(serde_json::to_string_pretty(self)?)

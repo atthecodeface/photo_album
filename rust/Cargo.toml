@@ -1,0 +1,61 @@
+[workspace]
+resolver = "3"
+members = [
+    "photo-album-core",
+#    "photo-album-wasm",
+    #"photo-album",
+]
+
+[workspace.package]
+edition = "2024"
+#? name = "photo-album"
+version = "0.0.1"
+readme = "README.md"
+authors = ["Gavin J Stark"]
+description = "Photo album for a website"
+homepage = "https://github.com/atthecodeface/photoalbum"
+documentation = "https://docs.rs/photoalbum"
+keywords = [""]
+categories = [""]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/atthecodeface/photoalbum"
+
+
+[workspace.dependencies]
+photo-album-core = { version = "0.0.1", path = "./photo-album-core" }
+
+[workspace.dependencies.num-traits]
+version = "0.2.19"
+
+[workspace.dependencies.serde_yaml]
+version = "0.9.34"
+
+[workspace.dependencies.serde_json]
+version = "1.0"
+features = ["alloc"]
+
+[workspace.dependencies.serde]
+version = "1.0"
+features = ["derive"]
+
+[workspace.dependencies.wasm-bindgen]
+version =  "0.2.126"
+
+[workspace.dependencies.thiserror]
+version = "2.0"
+
+[workspace.dependencies.anyhow]
+version = "1.0"
+
+[workspace.dependencies.thunderclap]
+version = "0.1"
+path = "../../thunderclap"
+
+[workspace.dependencies.image]
+version = "0.25"
+default-features = false
+features = ["jpeg", "png"]
+
+[workspace.dependencies.geo-nd-wasm]
+version = "0.8"
+path = "../../geo-nd-wasm"

@@ -19,7 +19,7 @@ impl std::fmt::Display for Lod {
         } else if self.0 > 1_000_000 {
             let m = self.0 / 1_000_000;
             let k = ((self.0 / 1000) - m * 1000) / 1000;
-            if (k > 0) {
+            if k > 0  {
                 write!(fmt, "{m}M{k:03}")
             } else {
                 write!(fmt, "{m}M")
@@ -27,7 +27,7 @@ impl std::fmt::Display for Lod {
         } else if self.0 > 1_000 {
             let k = self.0 / 1_000;
             let u = self.0 - k * 1000;
-            if (u > 0) {
+            if u > 0  {
                 write!(fmt, "{k}k{u:03}")
             } else {
                 write!(fmt, "{k}k")

@@ -1,7 +1,4 @@
-use std::{
-    cmp::max,
-    path::{Path, PathBuf},
-};
+use std::path::PathBuf;
 
 use thiserror::Error;
 

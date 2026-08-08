@@ -1,7 +1,8 @@
 use thiserror::Error;
 
-mod wasm_lib;
-pub use wasm_lib::*;
+// mod wasm_lib;
+// pub use wasm_lib::*;
+// pub mod web_album;
 
 pub mod path_set;
 pub use path_set::PathSet;
@@ -40,6 +41,5 @@ pub(crate) use indexed::Idx;
 pub mod album;
 // pub mod dom;
 pub mod desc;
-pub mod web_album;
 
 pub use album::{Album, Image, Page, Style};

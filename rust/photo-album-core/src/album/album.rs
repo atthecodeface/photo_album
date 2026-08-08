@@ -176,7 +176,7 @@ impl Album {
         self.images.iter()
     }
 
-    pub fn image_tags<'iter>(&'iter self) -> impl Iterator<Item = &String> {
+    pub fn image_tags<'iter>(&'iter self) -> impl Iterator<Item = &'iter String> {
         self.images.keys()
     }
 
@@ -184,7 +184,7 @@ impl Album {
         self.maps.iter()
     }
 
-    pub fn map_tags<'iter>(&'iter self) -> impl Iterator<Item = &String> {
+    pub fn map_tags<'iter>(&'iter self) -> impl Iterator<Item = &'iter String> {
         self.maps.keys()
     }
 
@@ -192,7 +192,7 @@ impl Album {
         self.pages.iter()
     }
 
-    pub fn page_tags<'iter>(&'iter self) -> impl Iterator<Item = &String> {
+    pub fn page_tags<'iter>(&'iter self) -> impl Iterator<Item = &'iter String> {
         self.pages.keys()
     }
 

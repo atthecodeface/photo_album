@@ -1,0 +1,20 @@
+[package]
+name = "photo-album-core"
+edition.workspace = true
+version.workspace = true
+description.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+keywords.workspace = true
+categories.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+thiserror.workspace = true
+image.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+serde_yaml.workspace = true
+thunderclap.workspace = true
+# num-traits = "0.2.19"

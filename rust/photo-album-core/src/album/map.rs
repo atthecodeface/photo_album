@@ -1,6 +1,5 @@
 use super::{ImageIndex, LatLon};
 
-use crate::Album;
 
 #[derive(Debug, Default)]
 pub struct Map {

@@ -1,6 +1,5 @@
 use std::path::{Path, PathBuf};
 
-use image::RgbImage;
 
 use super::Lod;
 
